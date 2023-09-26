@@ -1,0 +1,109 @@
+{
+    "name": "vscode-sksl",
+    "publisher": "Hippo",
+    "version": "0.1.0",
+    "displayName": "SkSL Language Server",
+    "description": "Code IntelliSense for Skia's shading language.",
+    "license": "SEE LICENSE IN LICENSE",
+    "categories": [
+        "Programming Languages"
+    ],
+    "keywords": [
+        "sksl",
+        "skia"
+    ],
+    "homepage": "https://github.com/seven332/vscode-sksl",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/seven332/vscode-sksl.git"
+    },
+    "bugs": {
+        "url": "https://github.com/seven332/vscode-sksl/issues"
+    },
+    "main": "./build/index.js",
+    "engines": {
+        "vscode": "^1.77.0"
+    },
+    "extensionKind": [
+        "workspace"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "sksl",
+                "aliases": [
+                    "SKSL",
+                    "SkSL",
+                    "sksl"
+                ],
+                "extensions": [
+                    "sksl"
+                ],
+                "configuration": "./build/language.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "sksl",
+                "scopeName": "source.sksl",
+                "path": "./build/grammar.json"
+            }
+        ]
+    },
+    "devDependencies": {
+        "@rollup/plugin-commonjs": "^24.1.0",
+        "@rollup/plugin-node-resolve": "^15.0.2",
+        "@rollup/plugin-terser": "^0.4.1",
+        "@rollup/plugin-typescript": "^11.1.0",
+        "@types/jest": "^29.5.0",
+        "@types/node": "^18.15.11",
+        "@types/vscode": "^1.77.0",
+        "@typescript-eslint/eslint-plugin": "^5.58.0",
+        "@typescript-eslint/parser": "^5.58.0",
+        "@vscode/vsce": "^2.19.0",
+        "eslint": "^8.38.0",
+        "jest": "^29.5.0",
+        "node-addon-api": "^6.0.0",
+        "node-gyp": "^9.3.1",
+        "prettier": "^2.8.7",
+        "rollup": "^3.20.2",
+        "ts-jest": "^29.1.0",
+        "ts-node": "^10.9.1",
+        "typescript": "^5.0.4",
+        "vscode-languageclient": "^8.1.0",
+        "vscode-languageserver": "^8.1.0",
+        "vscode-languageserver-textdocument": "^1.0.8",
+        "vscode-uri": "^3.0.7"
+    },
+    "scripts": {
+        "prepare": "ts-node script prepare",
+        "build": "ts-node script build",
+        "debug": "ts-node script debug",
+        "test": "ts-node script test",
+        "format": "ts-node script format",
+        "package": "ts-node script package"
+    },
+    "eslintConfig": {
+        "parser": "@typescript-eslint/parser",
+        "plugins": [
+            "@typescript-eslint"
+        ],
+        "extends": [
+            "eslint:recommended",
+            "plugin:@typescript-eslint/recommended"
+        ]
+    },
+    "prettier": {
+        "printWidth": 120,
+        "tabWidth": 4,
+        "useTabs": false,
+        "semi": false,
+        "singleQuote": true,
+        "quoteProps": "as-needed",
+        "jsxSingleQuote": false,
+        "trailingComma": "all",
+        "bracketSpacing": true,
+        "bracketSameLine": false,
+        "arrowParens": "always"
+    }
+}
