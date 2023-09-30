@@ -10,6 +10,11 @@ function npx(name: string): string {
     return `${name}${os.platform() == 'win32' ? '.cmd' : ''}`
 }
 
+function chdir(dir: string) {
+    dir = canonicalize(dir)
+    process.chdir(path.join(__dirname, '..', dir))
+}
+
 function exec(cmd: string, ...args: string[]) {
     cmd = canonicalize(cmd)
     const result = child_process.spawnSync(cmd, args, { stdio: 'inherit' })
@@ -19,10 +24,30 @@ function exec(cmd: string, ...args: string[]) {
     }
 }
 
+function bundle(debug: boolean) {
+    const environment = debug ? 'development' : 'production'
+    chdir('.')
+    exec(
+        npx('rollup'),
+        '--config',
+        '--configPlugin=typescript={module:"esnext"}',
+        `--environment=NODE_ENV:${environment}`,
+    )
+}
+
 function run(target: string) {
     switch (target) {
+        case 'build':
+            bundle(false)
+            chdir('script')
+            exec(npx('ts-node'), 'syntax.ts', '../build')
+            break
         case 'format':
             exec(npx('prettier'), '--write', '.')
+            break
+        case 'package':
+            chdir('.')
+            exec(npx('vsce'), 'package', '--out', 'sksl.vsix')
             break
         default:
             break
