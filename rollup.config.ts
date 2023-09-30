@@ -7,7 +7,7 @@ import terser from '@rollup/plugin-terser'
 const production = process.env.NODE_ENV == 'production'
 
 export default <RollupOptions>{
-    input: ['src/index.ts'],
+    input: ['src/index.ts', 'src/server.ts'],
     output: {
         dir: 'build',
         format: 'cjs',
