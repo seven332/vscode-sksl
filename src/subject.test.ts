@@ -1,0 +1,36 @@
+import { Subject } from './subject'
+
+describe('Subject', () => {
+    it('no resolve', async () => {
+        const subject = new Subject()
+        subject.append(new Uint8Array([48, 49, 10]))
+        expect(await subject.next()).toBe('01')
+        subject.append(new Uint8Array([50, 51, 10]))
+        expect(await subject.next()).toBe('23')
+        subject.append(new Uint8Array([52, 53, 10]))
+        subject.append(new Uint8Array([54, 55, 10]))
+        expect(await subject.next()).toBe('45')
+        expect(await subject.next()).toBe('67')
+        subject.append(new Uint8Array([56, 57, 10]))
+        expect(await subject.next()).toBe('89')
+    })
+
+    it('no string', async () => {
+        const subject = new Subject()
+        const p1 = subject.next()
+        subject.append(new Uint8Array([48, 49, 10]))
+        expect(await p1).toBe('01')
+        const p2 = subject.next()
+        subject.append(new Uint8Array([50, 51, 10]))
+        expect(await p2).toBe('23')
+        const p3 = subject.next()
+        const p4 = subject.next()
+        subject.append(new Uint8Array([52, 53, 10]))
+        subject.append(new Uint8Array([54, 55, 10]))
+        expect(await p3).toBe('45')
+        expect(await p4).toBe('67')
+        const p5 = subject.next()
+        subject.append(new Uint8Array([56, 57, 10]))
+        expect(await p5).toBe('89')
+    })
+})

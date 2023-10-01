@@ -16,3 +16,18 @@ export const getProgramKind = (content: string): ProgramKind | undefined => {
         return match[1] as ProgramKind
     }
 }
+
+export enum Method {
+    kUpdate = 'sksl/update',
+    kClose = 'sksl/close',
+}
+
+export interface UpdateParams {
+    file: string
+    content: string
+    kind: ProgramKind
+}
+
+export interface CloseParams {
+    file: string
+}
