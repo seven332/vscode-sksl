@@ -7,3 +7,5 @@ compile_commands.json
 *.swp
 *.vsix
 .DS_Store
+wasi/download
+wasi/build

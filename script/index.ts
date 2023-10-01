@@ -41,6 +41,8 @@ function run(target: string) {
             bundle(false)
             chdir('script')
             exec(npx('ts-node'), 'syntax.ts', '../build')
+            chdir('wasi')
+            exec('sh', 'build.sh')
             break
         case 'format':
             exec(npx('prettier'), '--write', '.')
