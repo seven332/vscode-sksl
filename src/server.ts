@@ -71,6 +71,10 @@ connection.onRequest(ls.SemanticTokensRequest.method, (params: ls.SemanticTokens
     // TODO:
 })
 
+connection.onRequest(Method.kError, (error: string) => {
+    console.log(`sksl-wasi-error: ${error}`)
+})
+
 documents.listen(connection)
 connection.listen()
 

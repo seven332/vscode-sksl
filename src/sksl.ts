@@ -18,6 +18,7 @@ export const getProgramKind = (content: string): ProgramKind | undefined => {
 }
 
 export enum Method {
+    kError = 'sksl/error',
     kUpdate = 'sksl/update',
     kClose = 'sksl/close',
 }

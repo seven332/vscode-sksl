@@ -33,6 +33,10 @@ export class Subject {
         return promise
     }
 
+    public fetch(): string | undefined {
+        return this.strings.shift()
+    }
+
     private resolves = new Array<(value: string) => void>()
     private strings = new Array<string>()
     private pending = ''

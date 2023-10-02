@@ -14,10 +14,18 @@ export class SkSL {
         return new SkSL(wasmProcess)
     }
 
+    public setOnError(onError: (error: string) => void) {
+        this.onError = onError
+    }
+
     public run() {
         this.wasmProcess.run()
         this.wasmProcess.stdout?.onData((data) => {
-            this.subject.append(data)
+            this.outSubject.append(data)
+        })
+        this.wasmProcess.stderr?.onData((data) => {
+            this.errSubject.append(data)
+            this.flushError()
         })
     }
 
@@ -26,10 +34,22 @@ export class SkSL {
         await this.wasmProcess.stdin?.write('\n')
         await this.wasmProcess.stdin?.write(JSON.stringify(params))
         await this.wasmProcess.stdin?.write('\n')
-        return await this.subject.next()
+        return await this.outSubject.next()
     }
 
     private constructor(private wasmProcess: WasmProcess) {}
 
-    private subject = new Subject()
+    private flushError() {
+        if (this.onError) {
+            let error = this.errSubject.fetch()
+            while (error) {
+                this.onError(error)
+                error = this.errSubject.fetch()
+            }
+        }
+    }
+
+    private onError: ((error: string) => void) | undefined
+    private outSubject = new Subject()
+    private errSubject = new Subject()
 }

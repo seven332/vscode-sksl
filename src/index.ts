@@ -37,6 +37,10 @@ export async function activate(context: ExtensionContext) {
         return await sksl.request(Method.kClose, params)
     })
 
+    sksl.setOnError((error: string) => {
+        client?.sendRequest(Method.kError, error)
+    })
+
     await client.start()
 }
 
