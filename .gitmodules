@@ -1,3 +1,6 @@
 [submodule "wasi/third_party/externals/json"]
 	path = wasi/third_party/externals/json
 	url = https://github.com/nlohmann/json.git
+[submodule "wasi/third_party/externals/skia"]
+	path = wasi/third_party/externals/skia
+	url = https://github.com/google/skia.git

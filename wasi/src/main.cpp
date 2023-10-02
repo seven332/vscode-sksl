@@ -1,9 +1,26 @@
+#include <src/sksl/SkSLCompiler.h>
+#include <src/sksl/SkSLModuleLoader.h>
+#include <src/sksl/SkSLProgramKind.h>
+#include <src/sksl/SkSLUtil.h>
+
 #include <array>
 #include <cstdint>
+#include <cstdlib>
 #include <iostream>
 #include <istream>
 #include <nlohmann/json.hpp>
 #include <string>
+
+static constexpr std::uint32_t Hash(const char* str) {
+    constexpr std::uint32_t kInitialValue = 17;
+    constexpr std::uint32_t kMultiplierValue = 37;
+    std::uint32_t hash = kInitialValue;
+    while (*str) {
+        hash = hash * kMultiplierValue + *str;
+        ++str;
+    }
+    return hash;
+}
 
 #pragma mark - Update
 
@@ -14,9 +31,36 @@ struct UpdateParams {
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(UpdateParams, file, content, kind)
 };
 
+static SkSL::ProgramKind ToProgramKind(const std::string& kind) {
+    switch (Hash(kind.data())) {
+    case Hash("frag"):
+        return SkSL::ProgramKind::kFragment;
+    case Hash("vert"):
+        return SkSL::ProgramKind::kVertex;
+    case Hash("compute"):
+        return SkSL::ProgramKind::kCompute;
+    case Hash("shader"):
+        return SkSL::ProgramKind::kRuntimeShader;
+    case Hash("colorfilter"):
+        return SkSL::ProgramKind::kRuntimeColorFilter;
+    case Hash("blender"):
+        return SkSL::ProgramKind::kRuntimeBlender;
+    case Hash("mesh-vert"):
+        return SkSL::ProgramKind::kMeshVertex;
+    case Hash("mesh-frag"):
+        return SkSL::ProgramKind::kMeshFragment;
+    default:
+        std::cerr << "Abort: invalid program kind: " << kind << std::endl;
+        std::abort();
+    }
+}
+
 static void Update(const UpdateParams& params) {
+    SkSL::Compiler compiler(SkSL::ShaderCapsFactory::Standalone());
+    auto kind = ToProgramKind(params.kind);
+    compiler.compileModule(kind, params.file.c_str(), params.content, SkSL::ModuleLoader::Get().rootModule(), false);
     // TODO:
-    std::cout << "update: " << params.file << std::endl;
+    std::cout << "Update: " << params.file << std::endl;
 }
 
 #pragma mark - Close
@@ -44,17 +88,6 @@ static std::string GetLine() {
     }
 }
 
-static constexpr std::uint32_t Hash(const char* str) {
-    constexpr std::uint32_t kInitialValue = 17;
-    constexpr std::uint32_t kMultiplierValue = 37;
-    std::uint32_t hash = kInitialValue;
-    while (*str) {
-        hash = hash * kMultiplierValue + *str;
-        ++str;
-    }
-    return hash;
-}
-
 extern "C" {
 
 #define CALL(Action)                    \
@@ -75,6 +108,9 @@ int main(void) {
             CALL(Close)
             break;
         }
+        default:
+            std::cerr << "Abort: invalid method: " << method << std::endl;
+            std::abort();
         }
     }
     return 0;

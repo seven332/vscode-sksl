@@ -37,7 +37,7 @@ function bundle(debug: boolean) {
     exec(
         npx('rollup'),
         '--config',
-        '--configPlugin=typescript={module:"esnext"}',
+        '--configPlugin=typescript={module:"esnext",exclude:"wasi/**/*.ts"}',
         `--environment=NODE_ENV:${environment}`,
     )
 }
@@ -48,6 +48,8 @@ function run(target: string) {
             bundle(false)
             chdir('script')
             exec(npx('ts-node'), 'syntax.ts', '../build')
+            chdir('wasi/third_party/externals/skia')
+            exec('python3', 'tools/git-sync-deps')
             chdir('wasi')
             exec('sh', 'build.sh')
             break
