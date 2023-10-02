@@ -1,6 +1,7 @@
 import * as child_process from 'child_process'
 import * as os from 'os'
 import * as path from 'path'
+import * as fs from 'fs'
 
 function canonicalize(file: string): string {
     return path.join(...file.split(path.posix.sep))
@@ -8,6 +9,12 @@ function canonicalize(file: string): string {
 
 function npx(name: string): string {
     return `${name}${os.platform() == 'win32' ? '.cmd' : ''}`
+}
+
+function list(dir: string, regex: RegExp): string[] {
+    dir = canonicalize(dir)
+    const entries = fs.readdirSync(dir)
+    return entries.filter((entry) => entry.match(regex)).map((entry) => path.join(dir, entry))
 }
 
 function chdir(dir: string) {
@@ -46,6 +53,7 @@ function run(target: string) {
             break
         case 'format':
             exec(npx('prettier'), '--write', '.')
+            exec('clang-format', '-i', ...list('wasi/src', /\.cpp$/))
             break
         case 'package':
             chdir('.')

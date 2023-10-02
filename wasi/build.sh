@@ -26,4 +26,4 @@ cmake -DCMAKE_BUILD_TYPE=Release -G Ninja -S ${SOURCE_DIR} -B ${BUILD_DIR} \
 
 cmake --build ${BUILD_DIR} --target sksl-wasi
 
-cp ${BUILD_DIR}/sksl-wasi ${SOURCE_DIR}/../build
+cp ${BUILD_DIR}/src/sksl-wasi ${SOURCE_DIR}/../build

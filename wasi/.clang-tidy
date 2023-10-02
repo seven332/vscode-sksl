@@ -1,0 +1,65 @@
+# Check https://clang.llvm.org/extra/clang-tidy/checks/list.html for full option list
+---
+Checks: "\
+    abseil-*,\
+    bugprone-*,\
+    cert-*,\
+    clang-analyzer-*,\
+    clang-diagnostic-*,\
+    concurrency-*,\
+    cppcoreguidelines-*,\
+    misc-*,\
+    modernize-*,\
+    performance-*,\
+    portability-*,\
+    readability-*,\
+    unix-*,\
+    -bugprone-easily-swappable-parameters,\
+    -cert-dcl21-cpp,\
+    -cppcoreguidelines-avoid-non-const-global-variables,\
+    -cppcoreguidelines-macro-usage,\
+    -cppcoreguidelines-owning-memory,\
+    -cppcoreguidelines-pro-bounds-pointer-arithmetic,\
+    -cppcoreguidelines-pro-type-reinterpret-cast,\
+    -cppcoreguidelines-special-member-functions,\
+    -misc-non-private-member-variables-in-classes,\
+    -misc-use-anonymous-namespace,\
+    -modernize-return-braced-init-list,\
+    -modernize-use-trailing-return-type,\
+    -readability-else-after-return,\
+    -readability-identifier-length,\
+    -readability-implicit-bool-conversion"
+
+CheckOptions:
+    - key: readability-function-cognitive-complexity.IgnoreMacros
+      value: 'true'
+    - key: readability-identifier-naming.AggressiveDependentMemberLookup
+      value: 'true'
+    - key: readability-identifier-naming.ConstantPrefix
+      value: 'k'
+    - key: readability-identifier-naming.ConstantCase
+      value: 'CamelCase'
+    - key: readability-identifier-naming.ClassMemberCase
+      value: 'lower_case'
+    - key: readability-identifier-naming.ClassMemberSuffix
+      value: '_'
+    - key: readability-identifier-naming.FunctionCase
+      value: 'CamelCase'
+    - key: readability-identifier-naming.VariableCase
+      value: 'lower_case'
+    - key: readability-identifier-naming.ClassCase
+      value: 'CamelCase'
+    - key: readability-identifier-naming.MethodCase
+      value: 'CamelCase'
+    - key: readability-identifier-naming.MemberCase
+      value: 'lower_case'
+    - key: readability-identifier-naming.NamespaceCase
+      value: 'lower_case'
+    - key: readability-identifier-naming.ParameterCase
+      value: 'lower_case'
+    - key: readability-identifier-naming.PrivateMemberCase
+      value: 'lower_case'
+    - key: readability-identifier-naming.PrivateMemberSuffix
+      value: '_'
+    - key: readability-identifier-naming.EnumCase
+      value: 'CamelCase'

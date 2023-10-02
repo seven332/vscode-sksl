@@ -2,3 +2,4 @@ package-lock.json
 node_modules
 build
 compile_commands.json
+wasi/third_party/externals
