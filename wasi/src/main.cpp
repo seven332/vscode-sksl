@@ -1,7 +1,9 @@
 #include <src/sksl/SkSLCompiler.h>
 #include <src/sksl/SkSLErrorReporter.h>
 #include <src/sksl/SkSLModuleLoader.h>
+#include <src/sksl/SkSLParser.h>
 #include <src/sksl/SkSLProgramKind.h>
+#include <src/sksl/SkSLProgramSettings.h>
 #include <src/sksl/SkSLUtil.h>
 
 #include <array>
@@ -10,6 +12,8 @@
 #include <iostream>
 #include <istream>
 #include <nlohmann/json.hpp>
+#include <src/sksl/generated/sksl_public.minified.sksl>
+#include <src/sksl/generated/sksl_shared.minified.sksl>
 #include <string>
 #include <vector>
 
@@ -47,6 +51,10 @@ struct UpdateResult {
 
 class SkSLErrorReporter : public SkSL::ErrorReporter {
  public:
+    [[nodiscard]] const std::vector<SkSLError>& GetErrors() const {
+        return errors_;
+    }
+
     void FetchErrors(std::vector<SkSLError>* errors) {
         *errors = std::move(errors_);
     }
@@ -88,6 +96,59 @@ static SkSL::ProgramKind ToProgramKind(const std::string& kind) {
     }
 }
 
+static std::unique_ptr<SkSL::Module> CompileModule(
+    SkSL::Compiler* compiler,
+    SkSL::ProgramKind kind,
+    const char* module_name,
+    std::string module_source,
+    const SkSL::Module* parent,
+    SkSLErrorReporter* error_reporter
+) {
+    SkSL::ProgramSettings settings;
+    if (SkSL::ProgramConfig::IsRuntimeEffect(kind)) {
+        settings.fAllowNarrowingConversions = true;
+    }
+    SkSL::Parser parser {compiler, settings, kind, std::move(module_source)};
+    auto module = parser.moduleInheritingFrom(parent);
+    if (error_reporter && (!error_reporter->GetErrors().empty() || !module)) {
+        std::cerr << "Abort: failed to complied " << module_name << std::endl;
+        for (const auto& error : error_reporter->GetErrors()) {
+            std::cerr << "[" << error.start << ", " << error.end << "): " << error.msg << std::endl;
+        }
+        std::abort();
+    }
+    return module;
+}
+
+static std::unique_ptr<SkSL::Module> CompileBuiltinModule() {
+    SkSL::Compiler compiler(SkSL::ShaderCapsFactory::Standalone());
+
+    SkSLErrorReporter error_reporter;
+    compiler.context().fErrors = &error_reporter;
+
+    auto shared_module = CompileModule(
+        &compiler,
+        SkSL::ProgramKind::kFragment,
+        "sksl_shared.sksl",
+        reinterpret_cast<const char*>(SKSL_MINIFIED_sksl_shared),
+        SkSL::ModuleLoader::Get().rootModule(),
+        &error_reporter
+    );
+
+    auto public_module = CompileModule(
+        &compiler,
+        SkSL::ProgramKind::kFragment,
+        "sksl_public.sksl",
+        reinterpret_cast<const char*>(SKSL_MINIFIED_sksl_public),
+        shared_module.get(),
+        &error_reporter
+    );
+
+    SkSL::ModuleLoader::Get().addPublicTypeAliases(public_module.get());
+
+    return public_module;
+}
+
 static void Update(const UpdateParams& params) {
     SkSL::Compiler compiler(SkSL::ShaderCapsFactory::Standalone());
 
@@ -95,7 +156,8 @@ static void Update(const UpdateParams& params) {
     compiler.context().fErrors = &error_reporter;
 
     auto kind = ToProgramKind(params.kind);
-    compiler.compileModule(kind, params.file.c_str(), params.content, SkSL::ModuleLoader::Get().rootModule(), false);
+    static const auto kBuiltinModule = CompileBuiltinModule();
+    auto module = CompileModule(&compiler, kind, params.file.c_str(), params.content, kBuiltinModule.get(), nullptr);
 
     UpdateResult result;
     error_reporter.FetchErrors(&result.errors);
