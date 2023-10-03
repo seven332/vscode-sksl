@@ -83,17 +83,23 @@ async function update(file: string, content: string, kind: ProgramKind): Promise
     const params: UpdateParams = { file, content, kind }
     const body: string = await connection.sendRequest(Method.kUpdate, JSON.stringify(params))
     const result: UpdateResult = JSON.parse(body)
+    console.log(Method.kUpdate, body)
 
     const filePosition = new FilePosition(content)
-    filePositions[file] = filePosition
 
-    return result.errors.map((error) =>
+    const diagnostics = result.errors.map((error) =>
         ls.Diagnostic.create(
             ls.Range.create(filePosition.getPosition(error.start), filePosition.getPosition(error.end)),
             error.msg,
             ls.DiagnosticSeverity.Error,
         ),
     )
+
+    if (result.succeed) {
+        filePositions.set(file, filePosition)
+    }
+
+    return diagnostics
 }
 
 async function close(file: string) {
@@ -102,8 +108,8 @@ async function close(file: string) {
     }
 
     const params: CloseParams = { file }
-    const result: string = await connection.sendRequest(Method.kClose, JSON.stringify(params))
-    console.log(result)
+    const body: string = await connection.sendRequest(Method.kClose, JSON.stringify(params))
+    console.log(Method.kClose, body)
 
     filePositions.delete(file)
 }

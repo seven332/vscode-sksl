@@ -38,9 +38,14 @@ export interface SkSLError {
 }
 
 export interface UpdateResult {
+    succeed: boolean
     errors: SkSLError[]
 }
 
 export interface CloseParams {
     file: string
+}
+
+export interface CloseResult {
+    succeed: boolean
 }

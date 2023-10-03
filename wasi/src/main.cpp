@@ -15,7 +15,10 @@
 #include <src/sksl/generated/sksl_public.minified.sksl>
 #include <src/sksl/generated/sksl_shared.minified.sksl>
 #include <string>
+#include <unordered_map>
 #include <vector>
+
+static std::unordered_map<std::string, std::unique_ptr<SkSL::Module>> modules;
 
 static constexpr std::uint32_t Hash(const char* str) {
     constexpr std::uint32_t kInitialValue = 17;
@@ -45,8 +48,9 @@ struct SkSLError {
 };
 
 struct UpdateResult {
+    bool succeed = false;
     std::vector<SkSLError> errors;
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(UpdateResult, errors)
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(UpdateResult, succeed, errors)
 };
 
 class SkSLErrorReporter : public SkSL::ErrorReporter {
@@ -155,12 +159,17 @@ static void Update(const UpdateParams& params) {
     SkSLErrorReporter error_reporter;
     compiler.context().fErrors = &error_reporter;
 
-    auto kind = ToProgramKind(params.kind);
     static const auto kBuiltinModule = CompileBuiltinModule();
+    auto kind = ToProgramKind(params.kind);
     auto module = CompileModule(&compiler, kind, params.file.c_str(), params.content, kBuiltinModule.get(), nullptr);
 
     UpdateResult result;
     error_reporter.FetchErrors(&result.errors);
+    result.succeed = module != nullptr;
+    if (result.succeed) {
+        modules[params.file] = std::move(module);
+    }
+
     nlohmann::json j = result;
     std::cout << j.dump() << std::endl;
 }
@@ -172,9 +181,24 @@ struct CloseParams {
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(CloseParams, file)
 };
 
+struct CloseResult {
+    bool succeed = false;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(CloseResult, succeed)
+};
+
 static void Close(const CloseParams& params) {
-    // TODO:
-    std::cout << "Close: " << params.file << std::endl;
+    CloseResult result;
+
+    auto iter = modules.find(params.file);
+    if (iter == modules.end()) {
+        result.succeed = false;
+    } else {
+        modules.erase(iter);
+        result.succeed = true;
+    }
+
+    nlohmann::json j = result;
+    std::cout << j.dump() << std::endl;
 }
 
 static std::string GetLine() {
