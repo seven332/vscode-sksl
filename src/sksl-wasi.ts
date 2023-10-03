@@ -15,6 +15,7 @@ export class SkSL {
 
     public setOnError(onError: (error: string) => void) {
         this.onError = onError
+        this.flushError()
     }
 
     public run() {

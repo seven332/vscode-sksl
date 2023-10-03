@@ -2,11 +2,12 @@ import * as ls from 'vscode-languageserver/node'
 import * as lstd from 'vscode-languageserver-textdocument'
 import { URI } from 'vscode-uri'
 import { CloseParams, Method, ProgramKind, UpdateParams, UpdateResult, getProgramKind } from './sksl'
+import { FilePosition } from './file-position'
 
 const connection = ls.createConnection(ls.ProposedFeatures.all)
 const documents = new ls.TextDocuments(lstd.TextDocument)
 const files = new Map<string, Set<string>>()
-const sources = new Set<string>()
+const filePositions = new Map<string, FilePosition>()
 
 connection.onInitialize(() => {
     return {
@@ -33,11 +34,11 @@ documents.onDidChangeContent(async (event) => {
     const content = event.document.getText()
     const kind = getProgramKind(content)
     if (kind) {
-        await update(file, content, kind)
-        // connection.sendDiagnostics({
-        //   uri: uri,
-        //   diagnostics: getDiagnostics(file),
-        // })
+        const diagnostics = await update(file, content, kind)
+        connection.sendDiagnostics({
+            uri: uri,
+            diagnostics: diagnostics,
+        })
     } else {
         await close(file)
         connection.sendDiagnostics({
@@ -78,20 +79,31 @@ connection.onRequest(Method.kError, (error: string) => {
 documents.listen(connection)
 connection.listen()
 
-async function update(file: string, content: string, kind: ProgramKind) {
+async function update(file: string, content: string, kind: ProgramKind): Promise<ls.Diagnostic[]> {
     const params: UpdateParams = { file, content, kind }
     const body: string = await connection.sendRequest(Method.kUpdate, JSON.stringify(params))
     const result: UpdateResult = JSON.parse(body)
-    console.log(result)
-    sources.add(file)
+
+    const filePosition = new FilePosition(content)
+    filePositions[file] = filePosition
+
+    return result.errors.map((error) =>
+        ls.Diagnostic.create(
+            ls.Range.create(filePosition.getPosition(error.start), filePosition.getPosition(error.end)),
+            error.msg,
+            ls.DiagnosticSeverity.Error,
+        ),
+    )
 }
 
 async function close(file: string) {
-    if (!sources.has(file)) {
+    if (!filePositions.has(file)) {
         return
     }
+
     const params: CloseParams = { file }
     const result: string = await connection.sendRequest(Method.kClose, JSON.stringify(params))
     console.log(result)
-    sources.delete(file)
+
+    filePositions.delete(file)
 }
