@@ -7,6 +7,7 @@ import {
     GetSymbolResult,
     Method,
     SkSLProgramKind,
+    SkSLRange,
     SkSLSymbolKind,
     UpdateParams,
     UpdateResult,
@@ -96,6 +97,10 @@ connection.onRequest(Method.kError, (error: string) => {
 documents.listen(connection)
 connection.listen()
 
+function toRange(filePosition: FilePosition, range: SkSLRange): ls.Range {
+    return ls.Range.create(filePosition.getPosition(range.start), filePosition.getPosition(range.end))
+}
+
 async function update(file: string, content: string, kind: SkSLProgramKind): Promise<ls.Diagnostic[]> {
     const params: UpdateParams = { file, content, kind }
     const body: string = await connection.sendRequest(Method.kUpdate, JSON.stringify(params))
@@ -105,11 +110,7 @@ async function update(file: string, content: string, kind: SkSLProgramKind): Pro
     const filePosition = new FilePosition(content)
 
     const diagnostics = result.errors.map((error) =>
-        ls.Diagnostic.create(
-            ls.Range.create(filePosition.getPosition(error.start), filePosition.getPosition(error.end)),
-            error.msg,
-            ls.DiagnosticSeverity.Error,
-        ),
+        ls.Diagnostic.create(toRange(filePosition, error.range), error.message, ls.DiagnosticSeverity.Error),
     )
 
     if (result.succeed) {
@@ -149,17 +150,22 @@ async function getDocumentSymbol(file: string): Promise<ls.DocumentSymbol[]> {
                 return ls.SymbolKind.Module
             case SkSLSymbolKind.kField:
                 return ls.SymbolKind.Field
-            case SkSLSymbolKind.kFunctionDeclaration:
+            case SkSLSymbolKind.kFunction:
                 return ls.SymbolKind.Function
-            case SkSLSymbolKind.kType:
+            case SkSLSymbolKind.kStruct:
                 return ls.SymbolKind.Struct
             case SkSLSymbolKind.kVariable:
                 return ls.SymbolKind.Variable
         }
     }
 
-    return result.symbols.map((symbol) => {
-        const range = ls.Range.create(filePosition.getPosition(symbol.start), filePosition.getPosition(symbol.end))
-        return ls.DocumentSymbol.create(symbol.name, undefined, toKind(symbol.kind), range, range)
-    })
+    return result.symbols.map((symbol) =>
+        ls.DocumentSymbol.create(
+            symbol.name,
+            undefined,
+            toKind(symbol.kind),
+            toRange(filePosition, symbol.range),
+            toRange(filePosition, symbol.selectionRange),
+        ),
+    )
 }

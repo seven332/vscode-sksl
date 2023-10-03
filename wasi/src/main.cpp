@@ -2,11 +2,20 @@
 #include <src/sksl/SkSLErrorReporter.h>
 #include <src/sksl/SkSLModuleLoader.h>
 #include <src/sksl/SkSLParser.h>
+#include <src/sksl/SkSLPosition.h>
 #include <src/sksl/SkSLProgramKind.h>
 #include <src/sksl/SkSLProgramSettings.h>
 #include <src/sksl/SkSLUtil.h>
+#include <src/sksl/ir/SkSLExtension.h>
+#include <src/sksl/ir/SkSLFunctionDefinition.h>
+#include <src/sksl/ir/SkSLFunctionPrototype.h>
+#include <src/sksl/ir/SkSLInterfaceBlock.h>
+#include <src/sksl/ir/SkSLModifiersDeclaration.h>
+#include <src/sksl/ir/SkSLStructDefinition.h>
 #include <src/sksl/ir/SkSLSymbolTable.h>
+#include <src/sksl/ir/SkSLVarDeclarations.h>
 
+#include <algorithm>
 #include <array>
 #include <cstdint>
 #include <cstdlib>
@@ -18,6 +27,35 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+struct SkSLRange {
+    std::uint32_t start;
+    std::uint32_t end;
+
+    SkSLRange() : start(0), end(0) {}
+    SkSLRange(const SkSL::Position& position) : start(position.startOffset()), end(position.endOffset()) {}
+
+    void Join(const SkSLRange& other) {
+        start = std::min(start, other.start);
+        end = std::min(end, other.end);
+    }
+
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(SkSLRange, start, end)
+};
+
+struct SkSLError {
+    std::string message;
+    SkSLRange range;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(SkSLError, message, range)
+};
+
+struct SkSLSymbol {
+    std::string name;
+    std::string kind;
+    SkSLRange range;
+    SkSLRange selectionRange;  // NOLINT
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(SkSLSymbol, name, kind, range, selectionRange)
+};
 
 static std::unordered_map<std::string, std::unique_ptr<SkSL::Module>> modules;
 
@@ -41,13 +79,6 @@ struct UpdateParams {
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(UpdateParams, file, content, kind)
 };
 
-struct SkSLError {
-    std::string msg;
-    std::uint32_t start;
-    std::uint32_t end;
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(SkSLError, msg, start, end)
-};
-
 struct UpdateResult {
     bool succeed = false;
     std::vector<SkSLError> errors;
@@ -67,9 +98,8 @@ class SkSLErrorReporter : public SkSL::ErrorReporter {
  protected:
     void handleError(std::string_view msg, SkSL::Position position) override {
         errors_.push_back({
-            std::string(msg),
-            static_cast<std::uint32_t>(position.startOffset()),
-            static_cast<std::uint32_t>(position.endOffset()),
+            .message = std::string(msg),
+            .range = position,
         });
     }
 
@@ -118,7 +148,7 @@ static std::unique_ptr<SkSL::Module> CompileModule(
     if (error_reporter && (!error_reporter->GetErrors().empty() || !module)) {
         std::cerr << "Abort: failed to complied " << module_name << std::endl;
         for (const auto& error : error_reporter->GetErrors()) {
-            std::cerr << "[" << error.start << ", " << error.end << "): " << error.msg << std::endl;
+            std::cerr << error.message << std::endl;
         }
         std::abort();
     }
@@ -209,48 +239,79 @@ struct GetSymbolParams {
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(GetSymbolParams, file)
 };
 
-struct SkSLSymbol {
-    std::string name;
-    std::string kind;
-    std::uint32_t start;
-    std::uint32_t end;
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(SkSLSymbol, name, kind, start, end)
-};
-
 struct GetSymbolResult {
     std::vector<SkSLSymbol> symbols;
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(GetSymbolResult, symbols)
 };
-
-static const char* ToString(SkSL::SymbolKind kind) {
-    switch (kind) {
-    default:
-    case SkSL::SymbolKind::kExternal:
-        return "external";
-    case SkSL::SymbolKind::kField:
-        return "field";
-    case SkSL::SymbolKind::kFunctionDeclaration:
-        return "function-declaration";
-    case SkSL::SymbolKind::kType:
-        return "type";
-    case SkSL::SymbolKind::kVariable:
-        return "variable";
-    }
-}
 
 static void GetSymbol(const GetSymbolParams& params) {
     GetSymbolResult result;
 
     auto iter = modules.find(params.file);
     if (iter != modules.end()) {
-        iter->second->fSymbols->foreach([&result](std::string_view, const SkSL::Symbol* symbol) {
-            result.symbols.push_back({
-                std::string(symbol->name()),
-                ToString(symbol->kind()),
-                static_cast<std::uint32_t>(symbol->position().startOffset()),
-                static_cast<std::uint32_t>(symbol->position().endOffset()),
-            });
-        });
+        for (const auto& element : iter->second->fElements) {
+            switch (element->kind()) {
+            case SkSL::ProgramElementKind::kExtension: {
+                auto& extension = element->as<SkSL::Extension>();
+                std::cerr << "TODO: GetSymbol kExtension " << std::endl;
+                break;
+            }
+            case SkSL::ProgramElementKind::kFunction: {
+                auto& function = element->as<SkSL::FunctionDefinition>();
+                auto range = SkSLRange(function.position());
+                range.Join(function.declaration().position());
+                range.Join(function.body()->position());
+                result.symbols.push_back(SkSLSymbol {
+                    .name = std::string(function.declaration().name()),
+                    .kind = "function",
+                    .range = range,
+                    .selectionRange = function.declaration().position(),
+                });
+                break;
+            }
+            case SkSL::ProgramElementKind::kFunctionPrototype: {
+                auto& prototype = element->as<SkSL::FunctionPrototype>();
+                std::cerr << "TODO: GetSymbol kFunctionPrototype " << std::endl;
+                break;
+            }
+            case SkSL::ProgramElementKind::kGlobalVar: {
+                auto& var = element->as<SkSL::GlobalVarDeclaration>();
+                auto range = SkSLRange(var.position());
+                range.Join(var.declaration()->position());
+                range.Join(var.varDeclaration().position());
+                range.Join(var.varDeclaration().var()->position());
+                result.symbols.push_back(SkSLSymbol {
+                    .name = std::string(var.varDeclaration().var()->name()),
+                    .kind = "variable",
+                    .range = range,
+                    .selectionRange = var.varDeclaration().var()->position(),
+                });
+                break;
+            }
+            case SkSL::ProgramElementKind::kInterfaceBlock: {
+                auto& interface = element->as<SkSL::InterfaceBlock>();
+                std::cerr << "TODO: GetSymbol kInterfaceBlock " << std::endl;
+                break;
+            }
+            case SkSL::ProgramElementKind::kModifiers: {
+                auto& modifiers = element->as<SkSL::ModifiersDeclaration>();
+                std::cerr << "TODO: GetSymbol kModifiers " << std::endl;
+                break;
+            }
+            case SkSL::ProgramElementKind::kStructDefinition: {
+                auto& struct_d = element->as<SkSL::StructDefinition>();
+                auto range = SkSLRange(struct_d.position());
+                range.Join(struct_d.type().position());
+                result.symbols.push_back(SkSLSymbol {
+                    .name = std::string(struct_d.type().name()),
+                    .kind = "struct",
+                    .range = range,
+                    .selectionRange = struct_d.type().position(),
+                });
+                break;
+            }
+            }
+        }
     }
 
     nlohmann::json j = result;

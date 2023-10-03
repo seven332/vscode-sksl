@@ -26,16 +26,35 @@ export enum Method {
     kGetSymbol = 'sksl/get-symbol',
 }
 
+export interface SkSLRange {
+    start: uinteger
+    end: uinteger
+}
+
+export interface SkSLError {
+    message: string
+    range: SkSLRange
+}
+
+export enum SkSLSymbolKind {
+    kExternal = 'external',
+    kField = 'field',
+    kFunction = 'function',
+    kStruct = 'struct',
+    kVariable = 'variable',
+}
+
+export interface SkSLSymbol {
+    name: string
+    kind: SkSLSymbolKind
+    range: SkSLRange
+    selectionRange: SkSLRange
+}
+
 export interface UpdateParams {
     file: string
     content: string
     kind: SkSLProgramKind
-}
-
-export interface SkSLError {
-    msg: string
-    start: uinteger
-    end: uinteger
 }
 
 export interface UpdateResult {
@@ -53,21 +72,6 @@ export interface CloseResult {
 
 export interface GetSymbolParams {
     file: string
-}
-
-export enum SkSLSymbolKind {
-    kExternal = 'external',
-    kField = 'field',
-    kFunctionDeclaration = 'function-declaration',
-    kType = 'type',
-    kVariable = 'variable',
-}
-
-export interface SkSLSymbol {
-    name: string
-    kind: SkSLSymbolKind
-    start: uinteger
-    end: uinteger
 }
 
 export interface GetSymbolResult {
