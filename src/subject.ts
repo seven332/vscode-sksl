@@ -22,13 +22,9 @@ export class Subject {
             return Promise.resolve(first)
         }
 
-        let promiseResolve: (value: string) => void = () => {
-            /**/
-        }
         const promise = new Promise<string>((resolve) => {
-            promiseResolve = resolve
+            this.resolves.push(resolve)
         })
-        this.resolves.push(promiseResolve)
 
         return promise
     }

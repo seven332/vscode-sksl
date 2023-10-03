@@ -8,8 +8,6 @@ BUILD_DIR=${SOURCE_DIR}/build
 SDK_FILE=${DOWNLOAD_DIR}/wasi-sdk-20.0-linux.tar.gz
 SDK_DIR=${DOWNLOAD_DIR}/wasi-sdk-20.0
 SDK_URL="https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-20/wasi-sdk-20.0-linux.tar.gz"
-WASI_SDK_PREFIX=${SDK_DIR}
-CMAKE_TOOLCHAIN_FILE=${SDK_DIR}/share/cmake/wasi-sdk.cmake
 
 mkdir -p ${DOWNLOAD_DIR}
 
@@ -22,8 +20,16 @@ if [ ! -d ${SDK_DIR} ]; then
 fi
 
 cmake -DCMAKE_BUILD_TYPE=Release -G Ninja -S ${SOURCE_DIR} -B ${BUILD_DIR} \
-    -DWASI_SDK_PREFIX=${WASI_SDK_PREFIX} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
+    -DWASI_SDK_PREFIX=${SDK_DIR} -DCMAKE_TOOLCHAIN_FILE=${SDK_DIR}/share/cmake/wasi-sdk.cmake
 
 cmake --build ${BUILD_DIR} --target sksl-wasi
 
 cp ${BUILD_DIR}/src/sksl-wasi ${SOURCE_DIR}/../build
+
+cat <<EOT >${SOURCE_DIR}/.clangd
+CompileFlags:
+  Add: [--sysroot, ${SDK_DIR}/share/wasi-sysroot]
+  CompilationDatabase: "${BUILD_DIR}"
+Diagnostics:
+  UnusedIncludes: Strict
+EOT
