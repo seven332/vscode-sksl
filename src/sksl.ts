@@ -1,6 +1,6 @@
 import { uinteger } from 'vscode-languageclient'
 
-export enum ProgramKind {
+export enum SkSLProgramKind {
     kFrag = 'frag',
     kVert = 'vert',
     kCompute = 'compute',
@@ -11,11 +11,11 @@ export enum ProgramKind {
     kMeshFrag = 'mesh-frag',
 }
 
-export const getProgramKind = (content: string): ProgramKind | undefined => {
-    const regex = new RegExp(`[ \\t]*\\/\\/[ /\\t]*kind[ \\t]*[:=][ \\t]*(${Object.values(ProgramKind).join('|')})`)
+export const getSkSLProgramKind = (content: string): SkSLProgramKind | undefined => {
+    const regex = new RegExp(`[ \\t]*\\/\\/[ /\\t]*kind[ \\t]*[:=][ \\t]*(${Object.values(SkSLProgramKind).join('|')})`)
     const match = content.match(regex)
     if (match) {
-        return match[1] as ProgramKind
+        return match[1] as SkSLProgramKind
     }
 }
 
@@ -23,12 +23,13 @@ export enum Method {
     kError = 'sksl/error',
     kUpdate = 'sksl/update',
     kClose = 'sksl/close',
+    kGetSymbol = 'sksl/get-symbol',
 }
 
 export interface UpdateParams {
     file: string
     content: string
-    kind: ProgramKind
+    kind: SkSLProgramKind
 }
 
 export interface SkSLError {
@@ -48,4 +49,27 @@ export interface CloseParams {
 
 export interface CloseResult {
     succeed: boolean
+}
+
+export interface GetSymbolParams {
+    file: string
+}
+
+export enum SkSLSymbolKind {
+    kExternal = 'external',
+    kField = 'field',
+    kFunctionDeclaration = 'function-declaration',
+    kType = 'type',
+    kVariable = 'variable',
+}
+
+export interface SkSLSymbol {
+    name: string
+    kind: SkSLSymbolKind
+    start: uinteger
+    end: uinteger
+}
+
+export interface GetSymbolResult {
+    symbols: SkSLSymbol[]
 }

@@ -1,30 +1,30 @@
-import { ProgramKind, getProgramKind } from './sksl'
+import { SkSLProgramKind, getSkSLProgramKind } from './sksl'
 
-describe('getProgramKind', () => {
+describe('getSkSLProgramKind', () => {
     it('right', () => {
-        expect(getProgramKind('// kind=frag')).toBe(ProgramKind.kFrag)
-        expect(getProgramKind('// kind=vert')).toBe(ProgramKind.kVert)
-        expect(getProgramKind('// kind=compute')).toBe(ProgramKind.kCompute)
-        expect(getProgramKind('// kind=shader')).toBe(ProgramKind.kShader)
-        expect(getProgramKind('// kind=colorfilter')).toBe(ProgramKind.kColorFilter)
-        expect(getProgramKind('// kind=blender')).toBe(ProgramKind.kBlender)
-        expect(getProgramKind('// kind=mesh-vert')).toBe(ProgramKind.kMeshVert)
-        expect(getProgramKind('// kind=mesh-frag')).toBe(ProgramKind.kMeshFrag)
+        expect(getSkSLProgramKind('// kind=frag')).toBe(SkSLProgramKind.kFrag)
+        expect(getSkSLProgramKind('// kind=vert')).toBe(SkSLProgramKind.kVert)
+        expect(getSkSLProgramKind('// kind=compute')).toBe(SkSLProgramKind.kCompute)
+        expect(getSkSLProgramKind('// kind=shader')).toBe(SkSLProgramKind.kShader)
+        expect(getSkSLProgramKind('// kind=colorfilter')).toBe(SkSLProgramKind.kColorFilter)
+        expect(getSkSLProgramKind('// kind=blender')).toBe(SkSLProgramKind.kBlender)
+        expect(getSkSLProgramKind('// kind=mesh-vert')).toBe(SkSLProgramKind.kMeshVert)
+        expect(getSkSLProgramKind('// kind=mesh-frag')).toBe(SkSLProgramKind.kMeshFrag)
     })
 
     it('case sensitive', () => {
-        expect(getProgramKind('// kind=Frag')).toBeUndefined()
+        expect(getSkSLProgramKind('// kind=Frag')).toBeUndefined()
     })
 
     it('single slash', () => {
-        expect(getProgramKind('/ kind=frag')).toBeUndefined()
+        expect(getSkSLProgramKind('/ kind=frag')).toBeUndefined()
     })
 
     it('many slash', () => {
-        expect(getProgramKind('//// kind=frag')).toBe(ProgramKind.kFrag)
+        expect(getSkSLProgramKind('//// kind=frag')).toBe(SkSLProgramKind.kFrag)
     })
 
     it('colon', () => {
-        expect(getProgramKind('// kind: frag')).toBe(ProgramKind.kFrag)
+        expect(getSkSLProgramKind('// kind: frag')).toBe(SkSLProgramKind.kFrag)
     })
 })

@@ -5,6 +5,7 @@
 #include <src/sksl/SkSLProgramKind.h>
 #include <src/sksl/SkSLProgramSettings.h>
 #include <src/sksl/SkSLUtil.h>
+#include <src/sksl/ir/SkSLSymbolTable.h>
 
 #include <array>
 #include <cstdint>
@@ -65,11 +66,11 @@ class SkSLErrorReporter : public SkSL::ErrorReporter {
 
  protected:
     void handleError(std::string_view msg, SkSL::Position position) override {
-        errors_.push_back(
-            {std::string(msg),
-             static_cast<std::uint32_t>(position.startOffset()),
-             static_cast<std::uint32_t>(position.endOffset())}
-        );
+        errors_.push_back({
+            std::string(msg),
+            static_cast<std::uint32_t>(position.startOffset()),
+            static_cast<std::uint32_t>(position.endOffset()),
+        });
     }
 
  private:
@@ -201,6 +202,63 @@ static void Close(const CloseParams& params) {
     std::cout << j.dump() << std::endl;
 }
 
+#pragma mark - GetSymbol
+
+struct GetSymbolParams {
+    std::string file;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(GetSymbolParams, file)
+};
+
+struct SkSLSymbol {
+    std::string name;
+    std::string kind;
+    std::uint32_t start;
+    std::uint32_t end;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(SkSLSymbol, name, kind, start, end)
+};
+
+struct GetSymbolResult {
+    std::vector<SkSLSymbol> symbols;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(GetSymbolResult, symbols)
+};
+
+static const char* ToString(SkSL::SymbolKind kind) {
+    switch (kind) {
+    default:
+    case SkSL::SymbolKind::kExternal:
+        return "external";
+    case SkSL::SymbolKind::kField:
+        return "field";
+    case SkSL::SymbolKind::kFunctionDeclaration:
+        return "function-declaration";
+    case SkSL::SymbolKind::kType:
+        return "type";
+    case SkSL::SymbolKind::kVariable:
+        return "variable";
+    }
+}
+
+static void GetSymbol(const GetSymbolParams& params) {
+    GetSymbolResult result;
+
+    auto iter = modules.find(params.file);
+    if (iter != modules.end()) {
+        iter->second->fSymbols->foreach([&result](std::string_view, const SkSL::Symbol* symbol) {
+            result.symbols.push_back({
+                std::string(symbol->name()),
+                ToString(symbol->kind()),
+                static_cast<std::uint32_t>(symbol->position().startOffset()),
+                static_cast<std::uint32_t>(symbol->position().endOffset()),
+            });
+        });
+    }
+
+    nlohmann::json j = result;
+    std::cout << j.dump() << std::endl;
+}
+
+#pragma mark - Main
+
 static std::string GetLine() {
     constexpr std::uint32_t kNextLine = 10;
     std::string result;
@@ -232,6 +290,10 @@ int main(void) {
         }
         case Hash("sksl/close"): {
             CALL(Close)
+            break;
+        }
+        case Hash("sksl/get-symbol"): {
+            CALL(GetSymbol)
             break;
         }
         default:

@@ -1,7 +1,17 @@
 import * as ls from 'vscode-languageserver/node'
 import * as lstd from 'vscode-languageserver-textdocument'
 import { URI } from 'vscode-uri'
-import { CloseParams, Method, ProgramKind, UpdateParams, UpdateResult, getProgramKind } from './sksl'
+import {
+    CloseParams,
+    GetSymbolParams,
+    GetSymbolResult,
+    Method,
+    SkSLProgramKind,
+    SkSLSymbolKind,
+    UpdateParams,
+    UpdateResult,
+    getSkSLProgramKind,
+} from './sksl'
 import { FilePosition } from './file-position'
 
 const connection = ls.createConnection(ls.ProposedFeatures.all)
@@ -13,6 +23,7 @@ connection.onInitialize(() => {
     return {
         capabilities: {
             textDocumentSync: ls.TextDocumentSyncKind.Incremental,
+            documentSymbolProvider: true,
             semanticTokensProvider: {
                 legend: {
                     tokenTypes: [],
@@ -32,7 +43,7 @@ documents.onDidChangeContent(async (event) => {
     uris.add(uri)
     files.set(file, uris)
     const content = event.document.getText()
-    const kind = getProgramKind(content)
+    const kind = getSkSLProgramKind(content)
     if (kind) {
         const diagnostics = await update(file, content, kind)
         connection.sendDiagnostics({
@@ -67,6 +78,12 @@ documents.onDidClose(async (event) => {
     }
 })
 
+connection.onDocumentSymbol((params) => {
+    const uri = params.textDocument.uri
+    const file = URI.parse(uri).fsPath
+    return getDocumentSymbol(file)
+})
+
 connection.onRequest(ls.SemanticTokensRequest.method, (params: ls.SemanticTokensParams) => {
     params.textDocument.uri
     // TODO:
@@ -79,11 +96,11 @@ connection.onRequest(Method.kError, (error: string) => {
 documents.listen(connection)
 connection.listen()
 
-async function update(file: string, content: string, kind: ProgramKind): Promise<ls.Diagnostic[]> {
+async function update(file: string, content: string, kind: SkSLProgramKind): Promise<ls.Diagnostic[]> {
     const params: UpdateParams = { file, content, kind }
     const body: string = await connection.sendRequest(Method.kUpdate, JSON.stringify(params))
     const result: UpdateResult = JSON.parse(body)
-    console.log(Method.kUpdate, body)
+    console.log(Method.kUpdate, file, body)
 
     const filePosition = new FilePosition(content)
 
@@ -109,7 +126,40 @@ async function close(file: string) {
 
     const params: CloseParams = { file }
     const body: string = await connection.sendRequest(Method.kClose, JSON.stringify(params))
-    console.log(Method.kClose, body)
+    console.log(Method.kClose, file, body)
 
     filePositions.delete(file)
+}
+
+async function getDocumentSymbol(file: string): Promise<ls.DocumentSymbol[]> {
+    const filePosition = filePositions.get(file)
+    if (!filePosition) {
+        return []
+    }
+
+    const params: GetSymbolParams = { file }
+    const body: string = await connection.sendRequest(Method.kGetSymbol, JSON.stringify(params))
+    const result: GetSymbolResult = JSON.parse(body)
+    console.log(Method.kGetSymbol, body)
+
+    const toKind = (kind: SkSLSymbolKind): ls.SymbolKind => {
+        switch (kind) {
+            default:
+            case SkSLSymbolKind.kExternal:
+                return ls.SymbolKind.Module
+            case SkSLSymbolKind.kField:
+                return ls.SymbolKind.Field
+            case SkSLSymbolKind.kFunctionDeclaration:
+                return ls.SymbolKind.Function
+            case SkSLSymbolKind.kType:
+                return ls.SymbolKind.Struct
+            case SkSLSymbolKind.kVariable:
+                return ls.SymbolKind.Variable
+        }
+    }
+
+    return result.symbols.map((symbol) => {
+        const range = ls.Range.create(filePosition.getPosition(symbol.start), filePosition.getPosition(symbol.end))
+        return ls.DocumentSymbol.create(symbol.name, undefined, toKind(symbol.kind), range, range)
+    })
 }
