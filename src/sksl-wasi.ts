@@ -1,6 +1,5 @@
 import * as fs from 'fs'
 import { Wasm, WasmProcess } from '@vscode/wasm-wasi'
-import { Method } from './sksl'
 import { Subject } from './subject'
 
 export class SkSL {
@@ -29,10 +28,10 @@ export class SkSL {
         })
     }
 
-    public async request(method: Method, params: unknown) {
+    public async request(method: string, params: string) {
         await this.wasmProcess.stdin?.write(method)
         await this.wasmProcess.stdin?.write('\n')
-        await this.wasmProcess.stdin?.write(JSON.stringify(params))
+        await this.wasmProcess.stdin?.write(params)
         await this.wasmProcess.stdin?.write('\n')
         return await this.outSubject.next()
     }

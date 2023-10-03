@@ -1,4 +1,5 @@
 #include <src/sksl/SkSLCompiler.h>
+#include <src/sksl/SkSLErrorReporter.h>
 #include <src/sksl/SkSLModuleLoader.h>
 #include <src/sksl/SkSLProgramKind.h>
 #include <src/sksl/SkSLUtil.h>
@@ -10,6 +11,7 @@
 #include <istream>
 #include <nlohmann/json.hpp>
 #include <string>
+#include <vector>
 
 static constexpr std::uint32_t Hash(const char* str) {
     constexpr std::uint32_t kInitialValue = 17;
@@ -29,6 +31,37 @@ struct UpdateParams {
     std::string content;
     std::string kind;
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(UpdateParams, file, content, kind)
+};
+
+struct SkSLError {
+    std::string msg;
+    std::uint32_t start;
+    std::uint32_t end;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(SkSLError, msg, start, end)
+};
+
+struct UpdateResult {
+    std::vector<SkSLError> errors;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(UpdateResult, errors)
+};
+
+class SkSLErrorReporter : public SkSL::ErrorReporter {
+ public:
+    void FetchErrors(std::vector<SkSLError>* errors) {
+        *errors = std::move(errors_);
+    }
+
+ protected:
+    void handleError(std::string_view msg, SkSL::Position position) override {
+        errors_.push_back(
+            {std::string(msg),
+             static_cast<std::uint32_t>(position.startOffset()),
+             static_cast<std::uint32_t>(position.endOffset())}
+        );
+    }
+
+ private:
+    std::vector<SkSLError> errors_;
 };
 
 static SkSL::ProgramKind ToProgramKind(const std::string& kind) {
@@ -57,10 +90,17 @@ static SkSL::ProgramKind ToProgramKind(const std::string& kind) {
 
 static void Update(const UpdateParams& params) {
     SkSL::Compiler compiler(SkSL::ShaderCapsFactory::Standalone());
+
+    SkSLErrorReporter error_reporter;
+    compiler.context().fErrors = &error_reporter;
+
     auto kind = ToProgramKind(params.kind);
     compiler.compileModule(kind, params.file.c_str(), params.content, SkSL::ModuleLoader::Get().rootModule(), false);
-    // TODO:
-    std::cout << "Update: " << params.file << std::endl;
+
+    UpdateResult result;
+    error_reporter.FetchErrors(&result.errors);
+    nlohmann::json j = result;
+    std::cout << j.dump() << std::endl;
 }
 
 #pragma mark - Close

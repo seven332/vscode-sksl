@@ -1,7 +1,7 @@
 import * as ls from 'vscode-languageserver/node'
 import * as lstd from 'vscode-languageserver-textdocument'
 import { URI } from 'vscode-uri'
-import { Method, ProgramKind, getProgramKind } from './sksl'
+import { CloseParams, Method, ProgramKind, UpdateParams, UpdateResult, getProgramKind } from './sksl'
 
 const connection = ls.createConnection(ls.ProposedFeatures.all)
 const documents = new ls.TextDocuments(lstd.TextDocument)
@@ -79,15 +79,19 @@ documents.listen(connection)
 connection.listen()
 
 async function update(file: string, content: string, kind: ProgramKind) {
-    const result: string = await connection.sendRequest(Method.kUpdate, { file, content, kind })
+    const params: UpdateParams = { file, content, kind }
+    const body: string = await connection.sendRequest(Method.kUpdate, JSON.stringify(params))
+    const result: UpdateResult = JSON.parse(body)
     console.log(result)
     sources.add(file)
 }
 
 async function close(file: string) {
-    if (sources.has(file)) {
-        const result: string = await connection.sendRequest(Method.kClose, { file })
-        console.log(result)
-        sources.delete(file)
+    if (!sources.has(file)) {
+        return
     }
+    const params: CloseParams = { file }
+    const result: string = await connection.sendRequest(Method.kClose, JSON.stringify(params))
+    console.log(result)
+    sources.delete(file)
 }

@@ -2,7 +2,7 @@ import * as path from 'path'
 import { ExtensionContext } from 'vscode'
 import { LanguageClient, TransportKind } from 'vscode-languageclient/node'
 import { SkSL } from './sksl-wasi'
-import { CloseParams, Method, UpdateParams } from './sksl'
+import { Method } from './sksl'
 
 let client: LanguageClient | undefined
 
@@ -29,11 +29,11 @@ export async function activate(context: ExtensionContext) {
         },
     )
 
-    client.onRequest(Method.kUpdate, async (params: UpdateParams) => {
+    client.onRequest(Method.kUpdate, async (params: string) => {
         return await sksl.request(Method.kUpdate, params)
     })
 
-    client.onRequest(Method.kClose, async (params: CloseParams) => {
+    client.onRequest(Method.kClose, async (params: string) => {
         return await sksl.request(Method.kClose, params)
     })
 

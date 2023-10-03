@@ -1,3 +1,5 @@
+import { uinteger } from 'vscode-languageclient'
+
 export enum ProgramKind {
     kFrag = 'frag',
     kVert = 'vert',
@@ -27,6 +29,16 @@ export interface UpdateParams {
     file: string
     content: string
     kind: ProgramKind
+}
+
+export interface SkSLError {
+    msg: string
+    start: uinteger
+    end: uinteger
+}
+
+export interface UpdateResult {
+    errors: SkSLError[]
 }
 
 export interface CloseParams {
