@@ -8,6 +8,7 @@ import {
     Method,
     SkSLProgramKind,
     SkSLRange,
+    SkSLSymbol,
     SkSLSymbolKind,
     UpdateParams,
     UpdateResult,
@@ -161,13 +162,15 @@ async function getDocumentSymbol(file: string): Promise<ls.DocumentSymbol[]> {
         }
     }
 
-    return result.symbols.map((symbol) =>
+    const toSymbol = (symbol: SkSLSymbol): ls.DocumentSymbol =>
         ls.DocumentSymbol.create(
             symbol.name,
             symbol.detail,
             toKind(symbol.kind),
             toRange(filePosition, symbol.range),
             toRange(filePosition, symbol.selectionRange),
-        ),
-    )
+            symbol.children.map((child) => toSymbol(child)),
+        )
+
+    return result.symbols.map((symbol) => toSymbol(symbol))
 }

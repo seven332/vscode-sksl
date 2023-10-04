@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <string_view>
+#include <vector>
 
 #include "data.h"
 #include "lexer.h"
@@ -23,6 +24,21 @@ static SkSLRange Find(const std::string& content, const SkSLRange& range, std::s
     } else {
         return range;
     }
+}
+
+static std::vector<SkSLSymbol> ToFieldSymbols(const SkSL::Type& type, const std::string& content) {
+    std::vector<SkSLSymbol> children;
+    children.reserve(type.fields().size());
+    for (const auto& field : type.fields()) {
+        children.push_back({
+            .name = std::string(field.fName),
+            .detail = field.fType->description(),
+            .kind = "field",
+            .range = field.fPosition,
+            .selectionRange = Find(content, field.fPosition, field.fName),
+        });
+    }
+    return children;
 }
 
 static void
@@ -91,6 +107,7 @@ static void Parse(std::vector<SkSLSymbol>* symbols, const SkSL::InterfaceBlock& 
             .kind = "interface",
             .range = range,
             .selectionRange = selection_range,
+            .children = ToFieldSymbols(element.var()->type(), content),
         });
     }
 
@@ -125,6 +142,7 @@ static void Parse(std::vector<SkSLSymbol>* symbols, const SkSL::StructDefinition
         .kind = "struct",
         .range = range,
         .selectionRange = selection_range,
+        .children = ToFieldSymbols(element.type(), content),
     });
 }
 

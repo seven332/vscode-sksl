@@ -7,6 +7,7 @@
 #include <limits>
 #include <nlohmann/json.hpp>
 #include <string>
+#include <vector>
 
 struct SkSLRange {
     std::uint32_t start;
@@ -49,6 +50,7 @@ struct SkSLSymbol {
     std::string kind;
     SkSLRange range;
     SkSLRange selectionRange;  // NOLINT
+    std::vector<SkSLSymbol> children;
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(SkSLSymbol, name, detail, kind, range, selectionRange)
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(SkSLSymbol, name, detail, kind, range, selectionRange, children)
 };

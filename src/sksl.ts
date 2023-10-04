@@ -51,6 +51,7 @@ export interface SkSLSymbol {
     kind: SkSLSymbolKind
     range: SkSLRange
     selectionRange: SkSLRange
+    children: SkSLSymbol[]
 }
 
 export interface UpdateParams {
