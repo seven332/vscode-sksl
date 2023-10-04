@@ -55,7 +55,8 @@ function run(target: string) {
             break
         case 'format':
             exec(npx('prettier'), '--write', '.')
-            exec('clang-format', '-i', ...list('wasi/src', /\.cpp$/))
+            exec('clang-format', '-i', ...list('wasi/src', /\.(cpp|h)$/))
+            exec('clang-format', '-i', ...list('wasi/src/action', /\.(cpp|h)$/))
             break
         case 'package':
             chdir('.')
