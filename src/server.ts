@@ -164,7 +164,7 @@ async function getDocumentSymbol(file: string): Promise<ls.DocumentSymbol[]> {
     return result.symbols.map((symbol) =>
         ls.DocumentSymbol.create(
             symbol.name,
-            undefined,
+            symbol.detail,
             toKind(symbol.kind),
             toRange(filePosition, symbol.range),
             toRange(filePosition, symbol.selectionRange),

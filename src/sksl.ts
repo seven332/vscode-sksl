@@ -47,6 +47,7 @@ export enum SkSLSymbolKind {
 
 export interface SkSLSymbol {
     name: string
+    detail: string
     kind: SkSLSymbolKind
     range: SkSLRange
     selectionRange: SkSLRange

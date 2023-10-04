@@ -36,6 +36,7 @@ Parse(std::vector<SkSLSymbol>* symbols, const SkSL::FunctionDefinition& element,
 
     symbols->push_back({
         .name = std::string(name),
+        .detail = element.declaration().description(),
         .kind = "function",
         .range = range,
         .selectionRange = selection_range,
@@ -52,6 +53,7 @@ Parse(std::vector<SkSLSymbol>* symbols, const SkSL::FunctionPrototype& element, 
 
     symbols->push_back({
         .name = std::string(name),
+        .detail = element.declaration().description(),
         .kind = "function",
         .range = range,
         .selectionRange = selection_range,
@@ -61,7 +63,6 @@ Parse(std::vector<SkSLSymbol>* symbols, const SkSL::FunctionPrototype& element, 
 static void
 Parse(std::vector<SkSLSymbol>* symbols, const SkSL::GlobalVarDeclaration& element, const std::string& content) {
     auto range = SkSLRange(element.position());
-    range.Join(element.declaration()->position());
     range.Join(element.varDeclaration().position());
     range.Join(element.varDeclaration().var()->position());
 
@@ -70,6 +71,7 @@ Parse(std::vector<SkSLSymbol>* symbols, const SkSL::GlobalVarDeclaration& elemen
 
     symbols->push_back({
         .name = std::string(name),
+        .detail = element.varDeclaration().var()->type().description(),
         .kind = "variable",
         .range = range,
         .selectionRange = selection_range,
@@ -85,6 +87,7 @@ static void Parse(std::vector<SkSLSymbol>* symbols, const SkSL::InterfaceBlock& 
 
         symbols->push_back({
             .name = std::string(name),
+            .detail = "interface",
             .kind = "interface",
             .range = range,
             .selectionRange = selection_range,
@@ -100,7 +103,8 @@ static void Parse(std::vector<SkSLSymbol>* symbols, const SkSL::InterfaceBlock& 
 
             symbols->push_back({
                 .name = std::string(name),
-                .kind = "interface",
+                .detail = var->type().description(),
+                .kind = "variable",
                 .range = range,
                 .selectionRange = selection_range,
             });
@@ -117,6 +121,7 @@ static void Parse(std::vector<SkSLSymbol>* symbols, const SkSL::StructDefinition
 
     symbols->push_back({
         .name = std::string(name),
+        .detail = "struct",
         .kind = "struct",
         .range = range,
         .selectionRange = selection_range,

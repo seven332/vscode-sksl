@@ -45,9 +45,10 @@ struct SkSLError {
 
 struct SkSLSymbol {
     std::string name;
+    std::string detail;
     std::string kind;
     SkSLRange range;
     SkSLRange selectionRange;  // NOLINT
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(SkSLSymbol, name, kind, range, selectionRange)
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(SkSLSymbol, name, detail, kind, range, selectionRange)
 };
