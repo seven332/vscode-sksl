@@ -9,6 +9,69 @@
 #include <src/sksl/ir/SkSLVarDeclarations.h>
 
 #include <iostream>
+#include <string_view>
+
+#include "data.h"
+#include "lexer.h"
+
+static SkSLRange Find(const std::string& content, const SkSLRange& range, std::string_view name) {
+    auto text = std::string_view(content.data() + range.start, content.data() + range.end);
+    auto result = FindIdentifier(text, name);
+    if (result.IsValid()) {
+        result.Offset(static_cast<int>(range.start));
+        return result;
+    } else {
+        return range;
+    }
+}
+
+static SkSLSymbol Parse(const SkSL::FunctionDefinition& element, const std::string& content) {
+    auto range = SkSLRange(element.position());
+    range.Join(element.declaration().position());
+    range.Join(element.body()->position());
+
+    auto name = element.declaration().name();
+    auto selection_range = Find(content, element.declaration().position(), name);
+
+    return {
+        .name = std::string(name),
+        .kind = "function",
+        .range = range,
+        .selectionRange = selection_range,
+    };
+}
+
+static SkSLSymbol Parse(const SkSL::GlobalVarDeclaration& element, const std::string& content) {
+    auto range = SkSLRange(element.position());
+    range.Join(element.declaration()->position());
+    range.Join(element.varDeclaration().position());
+    range.Join(element.varDeclaration().var()->position());
+
+    auto name = element.varDeclaration().var()->name();
+    auto selection_range = Find(content, element.varDeclaration().var()->position(), name);
+
+    return {
+        .name = std::string(name),
+        .kind = "variable",
+        .range = range,
+        .selectionRange = selection_range,
+    };
+}
+
+static SkSLSymbol Parse(const SkSL::StructDefinition& element, const std::string& content) {
+    auto range = SkSLRange(element.position());
+    range.Join(element.type().position());
+
+    auto name = element.type().name();
+    auto selection_range = Find(content, element.type().position(), name);
+
+    return {
+        .name = std::string(name),
+        .kind = "struct",
+        .range = range,
+        .selectionRange = selection_range,
+    };
+}
 
 GetSymbolResult GetSymbol(Modules* modules, const GetSymbolParams& params) {
     GetSymbolResult result;
@@ -18,7 +81,7 @@ GetSymbolResult GetSymbol(Modules* modules, const GetSymbolParams& params) {
         return result;
     }
 
-    for (const auto& element : iter->second->fElements) {
+    for (const auto& element : iter->second.module->fElements) {
         switch (element->kind()) {
         case SkSL::ProgramElementKind::kExtension: {
             auto& extension = element->as<SkSL::Extension>();
@@ -27,15 +90,7 @@ GetSymbolResult GetSymbol(Modules* modules, const GetSymbolParams& params) {
         }
         case SkSL::ProgramElementKind::kFunction: {
             auto& function = element->as<SkSL::FunctionDefinition>();
-            auto range = SkSLRange(function.position());
-            range.Join(function.declaration().position());
-            range.Join(function.body()->position());
-            result.symbols.push_back(SkSLSymbol {
-                .name = std::string(function.declaration().name()),
-                .kind = "function",
-                .range = range,
-                .selectionRange = function.declaration().position(),
-            });
+            result.symbols.push_back(Parse(function, iter->second.content));
             break;
         }
         case SkSL::ProgramElementKind::kFunctionPrototype: {
@@ -45,16 +100,7 @@ GetSymbolResult GetSymbol(Modules* modules, const GetSymbolParams& params) {
         }
         case SkSL::ProgramElementKind::kGlobalVar: {
             auto& var = element->as<SkSL::GlobalVarDeclaration>();
-            auto range = SkSLRange(var.position());
-            range.Join(var.declaration()->position());
-            range.Join(var.varDeclaration().position());
-            range.Join(var.varDeclaration().var()->position());
-            result.symbols.push_back(SkSLSymbol {
-                .name = std::string(var.varDeclaration().var()->name()),
-                .kind = "variable",
-                .range = range,
-                .selectionRange = var.varDeclaration().var()->position(),
-            });
+            result.symbols.push_back(Parse(var, iter->second.content));
             break;
         }
         case SkSL::ProgramElementKind::kInterfaceBlock: {
@@ -69,14 +115,7 @@ GetSymbolResult GetSymbol(Modules* modules, const GetSymbolParams& params) {
         }
         case SkSL::ProgramElementKind::kStructDefinition: {
             auto& struct_d = element->as<SkSL::StructDefinition>();
-            auto range = SkSLRange(struct_d.position());
-            range.Join(struct_d.type().position());
-            result.symbols.push_back(SkSLSymbol {
-                .name = std::string(struct_d.type().name()),
-                .kind = "struct",
-                .range = range,
-                .selectionRange = struct_d.type().position(),
-            });
+            result.symbols.push_back(Parse(struct_d, iter->second.content));
             break;
         }
         }

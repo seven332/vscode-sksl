@@ -126,7 +126,10 @@ UpdateResult Update(Modules* modules, const UpdateParams& params) {
     error_reporter.FetchErrors(&result.errors);
     result.succeed = module != nullptr;
     if (result.succeed) {
-        (*modules)[params.file] = std::move(module);
+        (*modules)[params.file] = {
+            .content = params.content,
+            .module = std::move(module),
+        };
     }
 
     return result;

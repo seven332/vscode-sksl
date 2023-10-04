@@ -3,7 +3,7 @@
 #include <nlohmann/json.hpp>
 #include <string>
 
-#include "modules.h"
+#include "module.h"
 
 struct CloseParams {
     std::string file;

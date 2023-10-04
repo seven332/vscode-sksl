@@ -3,6 +3,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(sksl-wasi 
     main.cpp
+    lexer.cpp
     semaphore.cpp
     action/update.cpp
     action/close.cpp

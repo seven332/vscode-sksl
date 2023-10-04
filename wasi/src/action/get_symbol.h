@@ -4,7 +4,7 @@
 #include <string>
 
 #include "data.h"
-#include "modules.h"
+#include "module.h"
 
 struct GetSymbolParams {
     std::string file;

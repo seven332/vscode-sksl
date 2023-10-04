@@ -9,7 +9,7 @@
 #include "action/get_symbol.h"
 #include "action/update.h"
 #include "hash.h"
-#include "modules.h"
+#include "module.h"
 
 static Modules modules;
 
