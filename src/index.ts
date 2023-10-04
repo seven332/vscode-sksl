@@ -29,17 +29,14 @@ export async function activate(context: ExtensionContext) {
         },
     )
 
-    client.onRequest(Method.kUpdate, async (params: string) => {
-        return await sksl.request(Method.kUpdate, params)
-    })
-
-    client.onRequest(Method.kClose, async (params: string) => {
-        return await sksl.request(Method.kClose, params)
-    })
-
-    client.onRequest(Method.kGetSymbol, async (params: string) => {
-        return await sksl.request(Method.kGetSymbol, params)
-    })
+    for (const method of Object.values(Method)) {
+        if (method == Method.kError) {
+            continue
+        }
+        client.onRequest(method, async (params: string) => {
+            return await sksl.request(method, params)
+        })
+    }
 
     sksl.setOnError((error: string) => {
         client?.sendRequest(Method.kError, error)

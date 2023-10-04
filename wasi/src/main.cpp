@@ -6,6 +6,7 @@
 #include <string>
 
 #include "action/close.h"
+#include "action/format.h"
 #include "action/get_symbol.h"
 #include "action/update.h"
 #include "hash.h"
@@ -51,6 +52,10 @@ int main(void) {
         }
         case Hash("sksl/get-symbol"): {
             CALL(GetSymbol)
+            break;
+        }
+        case Hash("sksl/format"): {
+            CALL(Format)
             break;
         }
         default:

@@ -3,6 +3,8 @@ import * as lstd from 'vscode-languageserver-textdocument'
 import { URI } from 'vscode-uri'
 import {
     CloseParams,
+    FormatParams,
+    FormatResult,
     GetSymbolParams,
     GetSymbolResult,
     Method,
@@ -26,6 +28,7 @@ connection.onInitialize(() => {
         capabilities: {
             textDocumentSync: ls.TextDocumentSyncKind.Incremental,
             documentSymbolProvider: true,
+            documentFormattingProvider: true,
             semanticTokensProvider: {
                 legend: {
                     tokenTypes: [],
@@ -84,6 +87,12 @@ connection.onDocumentSymbol((params) => {
     const uri = params.textDocument.uri
     const file = URI.parse(uri).fsPath
     return getDocumentSymbol(file)
+})
+
+connection.onDocumentFormatting((params) => {
+    const uri = params.textDocument.uri
+    const file = URI.parse(uri).fsPath
+    return format(file)
 })
 
 connection.onRequest(ls.SemanticTokensRequest.method, (params: ls.SemanticTokensParams) => {
@@ -173,4 +182,27 @@ async function getDocumentSymbol(file: string): Promise<ls.DocumentSymbol[]> {
         )
 
     return result.symbols.map((symbol) => toSymbol(symbol))
+}
+
+async function format(file: string): Promise<ls.TextEdit[]> {
+    const filePosition = filePositions.get(file)
+    if (!filePosition) {
+        return []
+    }
+
+    const params: FormatParams = { file }
+    const body: string = await connection.sendRequest(Method.kFormat, JSON.stringify(params))
+    const result: FormatResult = JSON.parse(body)
+    console.log(Method.kFormat, body)
+
+    if (result.newContent.length == 0) {
+        return []
+    }
+
+    return [
+        ls.TextEdit.replace(
+            ls.Range.create(ls.Position.create(0, 0), ls.Position.create(filePosition.getLines(), 0)),
+            result.newContent,
+        ),
+    ]
 }

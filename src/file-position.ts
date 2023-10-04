@@ -27,6 +27,10 @@ export class FilePosition {
         }
     }
 
+    public getLines(): number {
+        return this.positions.length
+    }
+
     public getPosition(offset: number): ls.Position {
         const index = this.findLastIndex((position) => position <= offset)
         if (index == -1) {

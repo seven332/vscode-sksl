@@ -24,6 +24,7 @@ export enum Method {
     kUpdate = 'sksl/update',
     kClose = 'sksl/close',
     kGetSymbol = 'sksl/get-symbol',
+    kFormat = 'sksl/format',
 }
 
 export interface SkSLRange {
@@ -79,4 +80,12 @@ export interface GetSymbolParams {
 
 export interface GetSymbolResult {
     symbols: SkSLSymbol[]
+}
+
+export interface FormatParams {
+    file: string
+}
+
+export interface FormatResult {
+    newContent: string
 }
