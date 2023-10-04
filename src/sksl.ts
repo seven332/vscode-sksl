@@ -42,6 +42,7 @@ export enum SkSLSymbolKind {
     kFunction = 'function',
     kStruct = 'struct',
     kVariable = 'variable',
+    kInterface = 'interface',
 }
 
 export interface SkSLSymbol {

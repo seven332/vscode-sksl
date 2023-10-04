@@ -156,6 +156,8 @@ async function getDocumentSymbol(file: string): Promise<ls.DocumentSymbol[]> {
                 return ls.SymbolKind.Struct
             case SkSLSymbolKind.kVariable:
                 return ls.SymbolKind.Variable
+            case SkSLSymbolKind.kInterface:
+                return ls.SymbolKind.Interface
         }
     }
 
