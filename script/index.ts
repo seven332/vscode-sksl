@@ -53,6 +53,12 @@ function run(target: string) {
             chdir('wasi')
             exec('sh', 'build.sh')
             break
+        case 'test':
+            chdir('.')
+            exec(npx('jest'))
+            chdir('wasi')
+            exec('sh', 'test.sh')
+            break
         case 'format':
             exec(npx('prettier'), '--write', '.')
             exec('clang-format', '-i', ...list('wasi/src', /\.(cpp|h)$/))
