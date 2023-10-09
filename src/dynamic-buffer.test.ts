@@ -60,4 +60,11 @@ describe('DynamicBuffer', () => {
         expect(buffer.size).toBe(16)
         expect(buffer.capacity).toBe(16)
     })
+
+    it('detach', () => {
+        const buffer = new DynamicBuffer()
+        buffer.writeString('abc')
+        expect(buffer.detach().length).toBe(7)
+        expect(buffer.size).toBe(0)
+    })
 })

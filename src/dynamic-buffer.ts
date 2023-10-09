@@ -19,6 +19,9 @@ export class DynamicBuffer {
     }
 
     public writeInt32(value: number) {
+        if (!(Number.isInteger(value) && value >= -2147483648 && value <= 2147483647)) {
+            throw new Error()
+        }
         this.ensureAppend(4)
         new DataView(this.data_.buffer).setInt32(value, this.size_, true)
         this.size_ += 4
@@ -32,6 +35,13 @@ export class DynamicBuffer {
         this.ensureAppend(data.length)
         this.data_.set(data, this.size_)
         this.size_ += data.length
+    }
+
+    public detach(): Uint8Array {
+        const result = this.data_.subarray(0, this.size_)
+        this.data_ = new Uint8Array(8)
+        this.size_ = 0
+        return result
     }
 
     private data_: Uint8Array
