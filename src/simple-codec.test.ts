@@ -14,6 +14,11 @@ const testObjectDummy: TestObject = {
     d: [0],
 }
 
+enum TestEnum {
+    a = 'a',
+    b = 'b',
+}
+
 describe('SimpleBuffer', () => {
     it('boolean', () => {
         expect(decode<boolean>(encode(false), false)).toBe(false)
@@ -53,5 +58,9 @@ describe('SimpleBuffer', () => {
             d: [784935, 45236523],
         }
         expect(decode<TestObject>(encode(value), testObjectDummy)).toStrictEqual(value)
+    })
+
+    it('enum', () => {
+        expect(decode<TestEnum>(encode(TestEnum.b), TestEnum.a)).toStrictEqual(TestEnum.b)
     })
 })
