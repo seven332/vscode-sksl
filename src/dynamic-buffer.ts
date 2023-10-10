@@ -14,7 +14,7 @@ export class DynamicBuffer {
 
     public writeBoolean(value: boolean) {
         this.ensureAppend(1)
-        new DataView(this.data_.buffer).setUint8(value ? 1 : 0, this.size_)
+        new DataView(this.data_.buffer).setUint8(this.size_, value ? 1 : 0)
         this.size_ += 1
     }
 
@@ -23,7 +23,7 @@ export class DynamicBuffer {
             throw new Error()
         }
         this.ensureAppend(4)
-        new DataView(this.data_.buffer).setInt32(value, this.size_, true)
+        new DataView(this.data_.buffer).setInt32(this.size_, value, true)
         this.size_ += 4
     }
 
