@@ -9,5 +9,6 @@ compile_commands.json
 .DS_Store
 wasi/download
 wasi/build
-wasi/build-test
+wasi/build_test
 wasi/.clangd
+.vscode/settings.json

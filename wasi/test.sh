@@ -3,7 +3,7 @@
 set -eu
 
 SOURCE_DIR=$(realpath $(dirname "$0"))
-BUILD_DIR=${SOURCE_DIR}/build-test
+BUILD_DIR=${SOURCE_DIR}/build_test
 
 cmake -DCMAKE_BUILD_TYPE=Debug -G Ninja -S ${SOURCE_DIR} -B ${BUILD_DIR}
 
