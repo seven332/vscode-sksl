@@ -1,4 +1,4 @@
-export class Subject {
+export class StringSubject {
     public append(data: Uint8Array) {
         for (const byte of data) {
             if (byte == 10) {

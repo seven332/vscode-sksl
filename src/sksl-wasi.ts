@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import { Wasm, WasmProcess } from '@vscode/wasm-wasi'
-import { Subject } from './subject'
+import { StringSubject } from './string-subject'
 import { BufferSubject } from './buffer-subject'
 import { encode } from './simple-codec'
 
@@ -59,5 +59,5 @@ export class SkSL {
 
     private onError: ((error: string) => void) | undefined
     private outSubject = new BufferSubject()
-    private errSubject = new Subject()
+    private errSubject = new StringSubject()
 }

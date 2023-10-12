@@ -1,8 +1,8 @@
-import { Subject } from './subject'
+import { StringSubject } from './string-subject'
 
-describe('Subject', () => {
+describe('StringSubject', () => {
     it('no resolve', async () => {
-        const subject = new Subject()
+        const subject = new StringSubject()
         subject.append(new Uint8Array([48, 49, 10]))
         expect(await subject.next()).toBe('01')
         subject.append(new Uint8Array([50, 51, 10]))
@@ -16,7 +16,7 @@ describe('Subject', () => {
     })
 
     it('no string', async () => {
-        const subject = new Subject()
+        const subject = new StringSubject()
         const p1 = subject.next()
         subject.append(new Uint8Array([48, 49, 10]))
         expect(await p1).toBe('01')
