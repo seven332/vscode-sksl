@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "simple_codec.h"
+
 struct SkSLRange {
     std::uint32_t start;
     std::uint32_t end;
@@ -31,6 +33,11 @@ struct SkSLRange {
         end = std::max(end, other.end);
     }
 
+    friend void Write(std::vector<std::byte>* bytes, const SkSLRange& value) {
+        Write(bytes, static_cast<int>(value.start));
+        Write(bytes, static_cast<int>(value.end));
+    }
+
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(SkSLRange, start, end)
 
  private:
@@ -40,6 +47,11 @@ struct SkSLRange {
 struct SkSLError {
     std::string message;
     SkSLRange range;
+
+    friend void Write(std::vector<std::byte>* bytes, const SkSLError& value) {
+        Write(bytes, value.message);
+        Write(bytes, value.range);
+    }
 
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(SkSLError, message, range)
 };
@@ -51,6 +63,15 @@ struct SkSLSymbol {
     SkSLRange range;
     SkSLRange selectionRange;  // NOLINT
     std::vector<SkSLSymbol> children;
+
+    friend void Write(std::vector<std::byte>* bytes, const SkSLSymbol& value) {
+        Write(bytes, value.name);
+        Write(bytes, value.detail);
+        Write(bytes, value.kind);
+        Write(bytes, value.range);
+        Write(bytes, value.selectionRange);
+        Write(bytes, value.children);
+    }
 
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(SkSLSymbol, name, detail, kind, range, selectionRange, children)
 };

@@ -1,6 +1,8 @@
 import * as fs from 'fs'
 import { Wasm, WasmProcess } from '@vscode/wasm-wasi'
 import { Subject } from './subject'
+import { BufferSubject } from './buffer-subject'
+import { encode } from './simple-codec'
 
 export class SkSL {
     public static async create(wasmPath: string): Promise<SkSL> {
@@ -29,11 +31,17 @@ export class SkSL {
         })
     }
 
-    public async request(method: string, params: string) {
-        await this.wasmProcess.stdin?.write(method)
-        await this.wasmProcess.stdin?.write('\n')
+    public async request(url: string, params: Uint8Array): Promise<Uint8Array> {
+        // write url
+        const length = new Uint8Array(4)
+        const buffer = encode(url)
+        new DataView(length.buffer).setUint32(0, buffer.length, true)
+        await this.wasmProcess.stdin?.write(length)
+        await this.wasmProcess.stdin?.write(buffer)
+        // write params
+        new DataView(length.buffer).setUint32(0, params.length, true)
+        await this.wasmProcess.stdin?.write(length)
         await this.wasmProcess.stdin?.write(params)
-        await this.wasmProcess.stdin?.write('\n')
         return await this.outSubject.next()
     }
 
@@ -50,6 +58,6 @@ export class SkSL {
     }
 
     private onError: ((error: string) => void) | undefined
-    private outSubject = new Subject()
+    private outSubject = new BufferSubject()
     private errSubject = new Subject()
 }

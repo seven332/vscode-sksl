@@ -7,13 +7,13 @@ import {
     FormatResult,
     GetSymbolParams,
     GetSymbolResult,
-    Method,
     SkSLProgramKind,
     SkSLRange,
     SkSLSymbol,
     SkSLSymbolKind,
     UpdateParams,
     UpdateResult,
+    Url,
     getSkSLProgramKind,
 } from './sksl'
 import { FilePosition } from './file-position'
@@ -100,7 +100,7 @@ connection.onRequest(ls.SemanticTokensRequest.method, (params: ls.SemanticTokens
     // TODO:
 })
 
-connection.onRequest(Method.kError, (error: string) => {
+connection.onRequest(Url.kError, (error: string) => {
     console.log(`sksl-wasi-error: ${error}`)
 })
 
@@ -112,10 +112,11 @@ function toRange(filePosition: FilePosition, range: SkSLRange): ls.Range {
 }
 
 async function update(file: string, content: string, kind: SkSLProgramKind): Promise<ls.Diagnostic[]> {
+    const url = Url.kUpdate
+    console.log(url, 'start', file)
     const params: UpdateParams = { file, content, kind }
-    const body: string = await connection.sendRequest(Method.kUpdate, JSON.stringify(params))
-    const result: UpdateResult = JSON.parse(body)
-    console.log(Method.kUpdate, file, body)
+    const result: UpdateResult = await connection.sendRequest(url, params)
+    console.log(url, 'end  ', file)
 
     const filePosition = new FilePosition(content)
 
@@ -135,9 +136,11 @@ async function close(file: string) {
         return
     }
 
+    const url = Url.kClose
+    console.log(url, 'start', file)
     const params: CloseParams = { file }
-    const body: string = await connection.sendRequest(Method.kClose, JSON.stringify(params))
-    console.log(Method.kClose, file, body)
+    await connection.sendRequest(url, params)
+    console.log(url, 'end  ', file)
 
     filePositions.delete(file)
 }
@@ -148,24 +151,23 @@ async function getDocumentSymbol(file: string): Promise<ls.DocumentSymbol[]> {
         return []
     }
 
+    const url = Url.kGetSymbol
+    console.log(url, 'start', file)
     const params: GetSymbolParams = { file }
-    const body: string = await connection.sendRequest(Method.kGetSymbol, JSON.stringify(params))
-    const result: GetSymbolResult = JSON.parse(body)
-    console.log(Method.kGetSymbol, body)
+    const result: GetSymbolResult = await connection.sendRequest(url, params)
+    console.log(url, 'end  ', file)
 
     const toKind = (kind: SkSLSymbolKind): ls.SymbolKind => {
         switch (kind) {
             default:
-            case SkSLSymbolKind.kExternal:
-                return ls.SymbolKind.Module
-            case SkSLSymbolKind.kField:
-                return ls.SymbolKind.Field
-            case SkSLSymbolKind.kFunction:
-                return ls.SymbolKind.Function
-            case SkSLSymbolKind.kStruct:
-                return ls.SymbolKind.Struct
             case SkSLSymbolKind.kVariable:
                 return ls.SymbolKind.Variable
+            case SkSLSymbolKind.kFunction:
+                return ls.SymbolKind.Function
+            case SkSLSymbolKind.kField:
+                return ls.SymbolKind.Field
+            case SkSLSymbolKind.kStruct:
+                return ls.SymbolKind.Struct
             case SkSLSymbolKind.kInterface:
                 return ls.SymbolKind.Interface
         }
@@ -190,10 +192,11 @@ async function format(file: string): Promise<ls.TextEdit[]> {
         return []
     }
 
+    const url = Url.kFormat
+    console.log(url, 'start', file)
     const params: FormatParams = { file }
-    const body: string = await connection.sendRequest(Method.kFormat, JSON.stringify(params))
-    const result: FormatResult = JSON.parse(body)
-    console.log(Method.kFormat, body)
+    const result: FormatResult = await connection.sendRequest(url, params)
+    console.log(url, 'end  ', file)
 
     if (result.newContent.length == 0) {
         return []

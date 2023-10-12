@@ -2,7 +2,18 @@ import * as path from 'path'
 import { ExtensionContext } from 'vscode'
 import { LanguageClient, TransportKind } from 'vscode-languageclient/node'
 import { SkSL } from './sksl-wasi'
-import { Method } from './sksl'
+import {
+    CloseParams,
+    FormatParams,
+    GetSymbolParams,
+    UpdateParams,
+    Url,
+    dummyCloseResult,
+    dummyFormatResult,
+    dummyGetSymbolResult,
+    dummyUpdateResult,
+} from './sksl'
+import { decode, encode } from './simple-codec'
 
 let client: LanguageClient | undefined
 
@@ -29,17 +40,28 @@ export async function activate(context: ExtensionContext) {
         },
     )
 
-    for (const method of Object.values(Method)) {
-        if (method == Method.kError) {
-            continue
-        }
-        client.onRequest(method, async (params: string) => {
-            return await sksl.request(method, params)
-        })
-    }
+    client.onRequest(Url.kUpdate, async (params: UpdateParams) => {
+        const buffer = await sksl.request(Url.kUpdate, encode(params))
+        return decode(buffer, dummyUpdateResult)
+    })
+
+    client.onRequest(Url.kClose, async (params: CloseParams) => {
+        const buffer = await sksl.request(Url.kClose, encode(params))
+        return decode(buffer, dummyCloseResult)
+    })
+
+    client.onRequest(Url.kGetSymbol, async (params: GetSymbolParams) => {
+        const buffer = await sksl.request(Url.kGetSymbol, encode(params))
+        return decode(buffer, dummyGetSymbolResult)
+    })
+
+    client.onRequest(Url.kFormat, async (params: FormatParams) => {
+        const buffer = await sksl.request(Url.kFormat, encode(params))
+        return decode(buffer, dummyFormatResult)
+    })
 
     sksl.setOnError((error: string) => {
-        client?.sendRequest(Method.kError, error)
+        client?.sendRequest(Url.kError, error)
     })
 
     await client.start()

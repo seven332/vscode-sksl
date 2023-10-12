@@ -1,4 +1,4 @@
-import { SkSLProgramKind, getSkSLProgramKind } from './sksl'
+import { getSkSLProgramKind, SkSLProgramKind } from './sksl'
 
 describe('getSkSLProgramKind', () => {
     it('right', () => {
@@ -10,6 +10,14 @@ describe('getSkSLProgramKind', () => {
         expect(getSkSLProgramKind('// kind=blender')).toBe(SkSLProgramKind.kBlender)
         expect(getSkSLProgramKind('// kind=mesh-vert')).toBe(SkSLProgramKind.kMeshVert)
         expect(getSkSLProgramKind('// kind=mesh-frag')).toBe(SkSLProgramKind.kMeshFrag)
+    })
+
+    it('two line', () => {
+        expect(getSkSLProgramKind('// kind=frag\nabc')).toBe(SkSLProgramKind.kFrag)
+    })
+
+    it('second line', () => {
+        expect(getSkSLProgramKind('abc\n// kind=frag')).toBeUndefined()
     })
 
     it('case sensitive', () => {

@@ -12,14 +12,16 @@ export enum SkSLProgramKind {
 }
 
 export const getSkSLProgramKind = (content: string): SkSLProgramKind | undefined => {
-    const regex = new RegExp(`[ \\t]*\\/\\/[ /\\t]*kind[ \\t]*[:=][ \\t]*(${Object.values(SkSLProgramKind).join('|')})`)
+    const regex = new RegExp(
+        `^[ \\t]*\\/\\/[ /\\t]*kind[ \\t]*[:=][ \\t]*(${Object.values(SkSLProgramKind).join('|')})`,
+    )
     const match = content.match(regex)
     if (match) {
         return match[1] as SkSLProgramKind
     }
 }
 
-export enum Method {
+export enum Url {
     kError = 'sksl/error',
     kUpdate = 'sksl/update',
     kClose = 'sksl/close',
@@ -32,17 +34,26 @@ export interface SkSLRange {
     end: uinteger
 }
 
+export const dummySkSLRange: SkSLRange = {
+    start: 0,
+    end: 0,
+}
+
 export interface SkSLError {
     message: string
     range: SkSLRange
 }
 
+export const dummySkSLError: SkSLError = {
+    message: '',
+    range: dummySkSLRange,
+}
+
 export enum SkSLSymbolKind {
-    kExternal = 'external',
-    kField = 'field',
-    kFunction = 'function',
-    kStruct = 'struct',
     kVariable = 'variable',
+    kFunction = 'function',
+    kField = 'field',
+    kStruct = 'struct',
     kInterface = 'interface',
 }
 
@@ -55,6 +66,19 @@ export interface SkSLSymbol {
     children: SkSLSymbol[]
 }
 
+export const dummySkSLSymbol: SkSLSymbol = (() => {
+    const dummy: SkSLSymbol = {
+        name: '',
+        detail: '',
+        kind: SkSLSymbolKind.kVariable,
+        range: dummySkSLRange,
+        selectionRange: dummySkSLRange,
+        children: [],
+    }
+    dummy.children = [dummy]
+    return dummy
+})()
+
 export interface UpdateParams {
     file: string
     content: string
@@ -66,12 +90,21 @@ export interface UpdateResult {
     errors: SkSLError[]
 }
 
+export const dummyUpdateResult: UpdateResult = {
+    succeed: false,
+    errors: [dummySkSLError],
+}
+
 export interface CloseParams {
     file: string
 }
 
 export interface CloseResult {
     succeed: boolean
+}
+
+export const dummyCloseResult: CloseResult = {
+    succeed: false,
 }
 
 export interface GetSymbolParams {
@@ -82,10 +115,18 @@ export interface GetSymbolResult {
     symbols: SkSLSymbol[]
 }
 
+export const dummyGetSymbolResult: GetSymbolResult = {
+    symbols: [dummySkSLSymbol],
+}
+
 export interface FormatParams {
     file: string
 }
 
 export interface FormatResult {
     newContent: string
+}
+
+export const dummyFormatResult: FormatResult = {
+    newContent: '',
 }

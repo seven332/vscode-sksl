@@ -29,7 +29,7 @@ void Write(std::vector<std::byte>* bytes, const std::string& value) {
 
 static void CheckSize(const std::vector<std::byte>& bytes, std::size_t at_least) {
     if (bytes.size() < at_least) {
-        std::cerr << "CheckSize failed" << std::endl;
+        std::cerr << "CheckSize failed: " << bytes.size() << " -> " << at_least << std::endl;
         std::abort();
     }
 }
@@ -50,6 +50,7 @@ std::size_t Read(const std::vector<std::byte>& bytes, std::size_t offset, std::s
     int size = 0;
     Read(bytes, offset, &size);
 
+    CheckSize(bytes, offset + 4 + size);
     *value = std::string(size, '\0');
     std::memcpy(value->data(), bytes.data() + offset + 4, size);
 
