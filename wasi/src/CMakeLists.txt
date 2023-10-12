@@ -3,6 +3,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(sksl-wasi-lib STATIC
     lexer.cpp
+    simple_codec.cpp
     semaphore.cpp
     action/update.cpp
     action/close.cpp
@@ -16,6 +17,7 @@ add_executable(sksl-wasi main.cpp)
 target_link_libraries(sksl-wasi PRIVATE sksl-wasi-lib)
 
 add_executable(sksl-wasi-lib-test
+    simple_codec_test.cpp
     action/format_test.cpp
 )
 target_link_libraries(sksl-wasi-lib-test PRIVATE sksl-wasi-lib gmock_main)
