@@ -1,6 +1,5 @@
 #pragma once
 
-#include <nlohmann/json.hpp>
 #include <string>
 
 #include "data.h"
@@ -14,8 +13,6 @@ struct GetSymbolParams {
         read += Read(bytes, offset + read, &value->file);
         return read;
     }
-
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(GetSymbolParams, file)
 };
 
 struct GetSymbolResult {
@@ -24,8 +21,6 @@ struct GetSymbolResult {
     friend void Write(std::vector<std::byte>* bytes, const GetSymbolResult& value) {
         Write(bytes, value.symbols);
     }
-
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(GetSymbolResult, symbols)
 };
 
 GetSymbolResult GetSymbol(Modules* modules, const GetSymbolParams& params);

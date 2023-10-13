@@ -1,6 +1,5 @@
 #pragma once
 
-#include <nlohmann/json.hpp>
 #include <string>
 
 #include "data.h"
@@ -19,8 +18,6 @@ struct UpdateParams {
         read += Read(bytes, offset + read, &value->kind);
         return read;
     }
-
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(UpdateParams, file, content, kind)
 };
 
 struct UpdateResult {
@@ -31,8 +28,6 @@ struct UpdateResult {
         Write(bytes, value.succeed);
         Write(bytes, value.errors);
     }
-
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(UpdateResult, succeed, errors)
 };
 
 UpdateResult Update(Modules* modules, const UpdateParams& params);

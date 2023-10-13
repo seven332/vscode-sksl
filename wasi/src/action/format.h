@@ -1,6 +1,5 @@
 #pragma once
 
-#include <nlohmann/json.hpp>
 #include <string>
 
 #include "module.h"
@@ -14,8 +13,6 @@ struct FormatParams {
         read += Read(bytes, offset + read, &value->file);
         return read;
     }
-
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(FormatParams, file)
 };
 
 struct FormatResult {
@@ -24,8 +21,6 @@ struct FormatResult {
     friend void Write(std::vector<std::byte>* bytes, const FormatResult& value) {
         Write(bytes, value.newContent);
     }
-
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(FormatResult, newContent)
 };
 
 FormatResult Format(Modules* modules, const FormatParams& params);

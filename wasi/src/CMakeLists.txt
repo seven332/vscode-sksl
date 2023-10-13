@@ -11,7 +11,7 @@ add_library(sksl-wasi-lib STATIC
     action/format.cpp
 )
 target_include_directories(sksl-wasi-lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(sksl-wasi-lib PUBLIC nlohmann_json skia_sksl)
+target_link_libraries(sksl-wasi-lib PUBLIC skia_sksl)
 
 add_executable(sksl-wasi main.cpp)
 target_link_libraries(sksl-wasi PRIVATE sksl-wasi-lib)

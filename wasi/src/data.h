@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <cstdint>
 #include <limits>
-#include <nlohmann/json.hpp>
 #include <string>
 #include <vector>
 
@@ -38,8 +37,6 @@ struct SkSLRange {
         Write(bytes, static_cast<int>(value.end));
     }
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(SkSLRange, start, end)
-
  private:
     static constexpr std::uint32_t kMax = std::numeric_limits<std::uint32_t>::max();
 };
@@ -52,8 +49,6 @@ struct SkSLError {
         Write(bytes, value.message);
         Write(bytes, value.range);
     }
-
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(SkSLError, message, range)
 };
 
 struct SkSLSymbol {
@@ -72,6 +67,4 @@ struct SkSLSymbol {
         Write(bytes, value.selectionRange);
         Write(bytes, value.children);
     }
-
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(SkSLSymbol, name, detail, kind, range, selectionRange, children)
 };

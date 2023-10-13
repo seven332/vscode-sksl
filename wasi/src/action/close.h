@@ -1,6 +1,5 @@
 #pragma once
 
-#include <nlohmann/json.hpp>
 #include <string>
 
 #include "module.h"
@@ -14,8 +13,6 @@ struct CloseParams {
         read += Read(bytes, offset + read, &value->file);
         return read;
     }
-
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(CloseParams, file)
 };
 
 struct CloseResult {
@@ -24,8 +21,6 @@ struct CloseResult {
     friend void Write(std::vector<std::byte>* bytes, const CloseResult& value) {
         Write(bytes, value.succeed);
     }
-
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(CloseResult, succeed)
 };
 
 CloseResult Close(Modules* modules, const CloseParams& params);
