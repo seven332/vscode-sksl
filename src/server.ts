@@ -112,11 +112,8 @@ function toRange(filePosition: FilePosition, range: SkSLRange): ls.Range {
 }
 
 async function update(file: string, content: string, kind: SkSLProgramKind): Promise<ls.Diagnostic[]> {
-    const url = Url.kUpdate
-    console.log(url, 'start', file)
     const params: UpdateParams = { file, content, kind }
-    const result: UpdateResult = await connection.sendRequest(url, params)
-    console.log(url, 'end  ', file)
+    const result: UpdateResult = await request(Url.kUpdate, file, params)
 
     const filePosition = new FilePosition(content)
 
@@ -136,11 +133,8 @@ async function close(file: string) {
         return
     }
 
-    const url = Url.kClose
-    console.log(url, 'start', file)
     const params: CloseParams = { file }
-    await connection.sendRequest(url, params)
-    console.log(url, 'end  ', file)
+    await request(Url.kClose, file, params)
 
     filePositions.delete(file)
 }
@@ -151,11 +145,8 @@ async function getDocumentSymbol(file: string): Promise<ls.DocumentSymbol[]> {
         return []
     }
 
-    const url = Url.kGetSymbol
-    console.log(url, 'start', file)
     const params: GetSymbolParams = { file }
-    const result: GetSymbolResult = await connection.sendRequest(url, params)
-    console.log(url, 'end  ', file)
+    const result: GetSymbolResult = await request(Url.kGetSymbol, file, params)
 
     const toKind = (kind: SkSLSymbolKind): ls.SymbolKind => {
         switch (kind) {
@@ -192,11 +183,8 @@ async function format(file: string): Promise<ls.TextEdit[]> {
         return []
     }
 
-    const url = Url.kFormat
-    console.log(url, 'start', file)
     const params: FormatParams = { file }
-    const result: FormatResult = await connection.sendRequest(url, params)
-    console.log(url, 'end  ', file)
+    const result: FormatResult = await request(Url.kFormat, file, params)
 
     if (result.newContent.length == 0) {
         return []
@@ -208,4 +196,11 @@ async function format(file: string): Promise<ls.TextEdit[]> {
             result.newContent,
         ),
     ]
+}
+
+async function request<Params, Result>(url: string, file: string, params: Params): Promise<Result> {
+    console.log(url, 'start', file)
+    const result: Result = await connection.sendRequest(url, params)
+    console.log(url, 'end  ', file)
+    return result
 }

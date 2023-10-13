@@ -2,17 +2,7 @@ import * as path from 'path'
 import { ExtensionContext } from 'vscode'
 import { LanguageClient, TransportKind } from 'vscode-languageclient/node'
 import { SkSL } from './sksl-wasi'
-import {
-    CloseParams,
-    FormatParams,
-    GetSymbolParams,
-    UpdateParams,
-    Url,
-    dummyCloseResult,
-    dummyFormatResult,
-    dummyGetSymbolResult,
-    dummyUpdateResult,
-} from './sksl'
+import { Url, dummyCloseResult, dummyFormatResult, dummyGetSymbolResult, dummyUpdateResult } from './sksl'
 import { decode, encode } from './simple-codec'
 
 let client: LanguageClient | undefined
@@ -40,25 +30,17 @@ export async function activate(context: ExtensionContext) {
         },
     )
 
-    client.onRequest(Url.kUpdate, async (params: UpdateParams) => {
-        const buffer = await sksl.request(Url.kUpdate, encode(params))
-        return decode(buffer, dummyUpdateResult)
-    })
+    async function onRequest<Params, Result>(url: string, dummyResult: Result) {
+        client!.onRequest(url, async (params: Params) => {
+            const buffer = await sksl.request(url, encode(params))
+            return decode(buffer, dummyResult)
+        })
+    }
 
-    client.onRequest(Url.kClose, async (params: CloseParams) => {
-        const buffer = await sksl.request(Url.kClose, encode(params))
-        return decode(buffer, dummyCloseResult)
-    })
-
-    client.onRequest(Url.kGetSymbol, async (params: GetSymbolParams) => {
-        const buffer = await sksl.request(Url.kGetSymbol, encode(params))
-        return decode(buffer, dummyGetSymbolResult)
-    })
-
-    client.onRequest(Url.kFormat, async (params: FormatParams) => {
-        const buffer = await sksl.request(Url.kFormat, encode(params))
-        return decode(buffer, dummyFormatResult)
-    })
+    onRequest(Url.kUpdate, dummyUpdateResult)
+    onRequest(Url.kClose, dummyCloseResult)
+    onRequest(Url.kGetSymbol, dummyGetSymbolResult)
+    onRequest(Url.kFormat, dummyFormatResult)
 
     sksl.setOnError((error: string) => {
         client?.sendRequest(Url.kError, error)
