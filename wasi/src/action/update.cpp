@@ -68,6 +68,9 @@ static std::unique_ptr<SkSL::Module> CompileModule(
     SkSLErrorReporter* error_reporter
 ) {
     SkSL::ProgramSettings settings;
+    settings.fOptimize = false;
+    settings.fRemoveDeadFunctions = false;
+    settings.fRemoveDeadVariables = false;
     if (SkSL::ProgramConfig::IsRuntimeEffect(kind)) {
         settings.fAllowNarrowingConversions = true;
     }

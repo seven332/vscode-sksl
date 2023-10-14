@@ -1,5 +1,7 @@
 #include "action/format.h"
 
+#include "formatter.h"
+
 FormatResult Format(Modules* modules, const FormatParams& params) {
     FormatResult result;
 
@@ -8,7 +10,6 @@ FormatResult Format(Modules* modules, const FormatParams& params) {
         return result;
     }
 
-    // TODO:
-    result.newContent = iter->second.content;
+    result.newContent = Formatter().Format(iter->second.content);
     return result;
 }

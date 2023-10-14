@@ -45,6 +45,8 @@ function bundle(debug: boolean) {
 function run(target: string) {
     switch (target) {
         case 'build':
+            chdir('.')
+            exec('rm', '-rf', 'build')
             bundle(false)
             chdir('script')
             exec(npx('ts-node'), 'syntax.ts', '../build')
