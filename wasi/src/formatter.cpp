@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <string>
+#include <string_view>
 
 using TokenKind = SkSL::Token::Kind;
 
@@ -173,6 +174,7 @@ std::string Formatter::Format(std::string_view content) {  // NOLINT
             break;
         case TokenKind::TK_LBRACE:  // {
             AppendAfterSpace(token);
+            PipeCommentBeforeNewLine(&lexer);
             NewLineActively();
             IncreaseIndent();
             break;
@@ -236,22 +238,20 @@ std::string Formatter::Format(std::string_view content) {  // NOLINT
         case TokenKind::TK_BITWISEANDEQ:  // &=
             AppendAfterSpace(token);
             break;
-        case TokenKind::TK_SEMICOLON:  // ;
+        case TokenKind::TK_SEMICOLON: {  // ;
             AppendNoSpace(token);
+            PipeCommentBeforeNewLine(&lexer);
             NewLineActively();
             break;
+        }
         case TokenKind::TK_WHITESPACE:
             break;
         case TokenKind::TK_LINE_COMMENT:
-            if (IsNewLine()) {
-                Append(token);
-            } else {
-                Append("  ");
-                Append(token);
-            }
+            AppendAfterSpace(token, 2);
+            NewLineActively();
             break;
         case TokenKind::TK_BLOCK_COMMENT:
-            Append(token);
+            AppendAfterSpace(token);
             break;
         case TokenKind::TK_INVALID:
             // failed
@@ -264,6 +264,31 @@ std::string Formatter::Format(std::string_view content) {  // NOLINT
     }
 
     return std::move(result_);
+}
+
+// Append command to result before new line
+void Formatter::PipeCommentBeforeNewLine(SkSL::Lexer* lexer) {
+    for (;;) {
+        auto save = lexer->getCheckpoint();
+        auto token = lexer->next();
+        if (token.fKind == TokenKind::TK_WHITESPACE) {
+            if (HasNewLine(GetTokenText(token))) {
+                lexer->rewindToCheckpoint(save);
+                break;
+            }
+        } else if (token.fKind == TokenKind::TK_LINE_COMMENT) {
+            AppendAfterSpace(token, 2);
+            break;
+        } else if (token.fKind == TokenKind::TK_BLOCK_COMMENT) {
+            AppendAfterSpace(token);
+            if (HasNewLine(GetTokenText(token))) {
+                break;
+            }
+        } else {
+            lexer->rewindToCheckpoint(save);
+            break;
+        }
+    }
 }
 
 bool Formatter::IsNewLine() const {
@@ -309,6 +334,10 @@ SkSL::Token Formatter::GetSecondLastValidToken() const {
     return {};
 }
 
+std::string_view Formatter::GetTokenText(SkSL::Token token) const {
+    return content_.substr(token.fOffset, token.fLength);
+}
+
 void Formatter::IncreaseIndent() {
     indent_level_ += 1;
 }
@@ -329,21 +358,14 @@ void Formatter::NewLinePassively() {
     line_tokens_.clear();
 }
 
-void Formatter::AppendAfterSpace(SkSL::Token token) {
+void Formatter::AppendAfterSpace(SkSL::Token token, int count) {
     if (IsNewLine()) {
         for (auto i = 0; i < indent_level_; ++i) {
             Append("    ");
         }
     } else {
-        Append(" ");
-    }
-    Append(token);
-}
-
-void Formatter::AppendNoSpace(SkSL::Token token) {
-    if (IsNewLine()) {
-        for (auto i = 0; i < indent_level_; ++i) {
-            Append("    ");
+        for (auto i = 0; i < count; ++i) {
+            Append(" ");
         }
     }
     Append(token);
@@ -351,7 +373,7 @@ void Formatter::AppendNoSpace(SkSL::Token token) {
 
 void Formatter::Append(SkSL::Token token) {
     line_tokens_.push_back(token);
-    Append(content_.substr(token.fOffset, token.fLength));
+    Append(GetTokenText(token));
 }
 
 void Formatter::Append(std::string_view text) {

@@ -50,3 +50,8 @@ TEST(FormatterTest, Operator) {
     EXPECT_STREQ(Formatter().Format("a^=b").c_str(), "a ^= b\n");
     EXPECT_STREQ(Formatter().Format("a&=b").c_str(), "a &= b\n");
 }
+
+TEST(FormatterTest, Comment) {
+    EXPECT_STREQ(Formatter().Format("a;//TODO").c_str(), "a;  //TODO\n");
+    EXPECT_STREQ(Formatter().Format("a;/*TODO*/").c_str(), "a; /*TODO*/\n");
+}
