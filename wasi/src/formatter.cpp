@@ -373,7 +373,24 @@ void Formatter::AppendAfterSpace(SkSL::Token token, int count) {
 
 void Formatter::Append(SkSL::Token token) {
     line_tokens_.push_back(token);
-    Append(GetTokenText(token));
+
+    auto text = GetTokenText(token);
+    if (token.fKind == TokenKind::TK_LINE_COMMENT) {
+        auto not_slash_index = text.find_first_not_of('/');
+        if (not_slash_index == std::string_view::npos) {
+            Append(text);
+            return;
+        }
+        Append(text.substr(0, not_slash_index));
+        auto not_space_index = text.find_first_not_of(' ', not_slash_index);
+        if (not_space_index == std::string_view::npos) {
+            return;
+        }
+        Append(" ");
+        Append(text.substr(not_space_index));
+    } else {
+        Append(text);
+    }
 }
 
 void Formatter::Append(std::string_view text) {

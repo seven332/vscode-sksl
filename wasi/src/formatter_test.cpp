@@ -52,6 +52,8 @@ TEST(FormatterTest, Operator) {
 }
 
 TEST(FormatterTest, Comment) {
-    EXPECT_STREQ(Formatter().Format("a;//TODO").c_str(), "a;  //TODO\n");
+    EXPECT_STREQ(Formatter().Format("a;//TODO").c_str(), "a;  // TODO\n");
+    EXPECT_STREQ(Formatter().Format("a;// TODO").c_str(), "a;  // TODO\n");
+    EXPECT_STREQ(Formatter().Format("a;//  TODO").c_str(), "a;  // TODO\n");
     EXPECT_STREQ(Formatter().Format("a;/*TODO*/").c_str(), "a; /*TODO*/\n");
 }
