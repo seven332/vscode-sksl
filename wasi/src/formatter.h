@@ -26,8 +26,8 @@ class Formatter {
     void PipeCommentBeforeNewLine(SkSL::Lexer* lexer);
 
     [[nodiscard]] bool IsNewLine() const;
-    [[nodiscard]] SkSL::Token GetLastValidToken() const;
-    [[nodiscard]] SkSL::Token GetSecondLastValidToken() const;
+    [[nodiscard]] SkSL::Token GetLastToken() const;
+    [[nodiscard]] SkSL::Token GetSecondLastToken() const;
     [[nodiscard]] std::string_view GetTokenText(SkSL::Token token) const;
 
     void IncreaseIndent();

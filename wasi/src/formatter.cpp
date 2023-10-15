@@ -53,54 +53,17 @@ static bool IsNumber(TokenKind kind) {
     }
 }
 
-static bool IsWord(TokenKind kind) {
+static bool IsIdentifier(TokenKind kind) {
     switch (kind) {
-    case TokenKind::TK_TRUE_LITERAL:
-    case TokenKind::TK_FALSE_LITERAL:
-    case TokenKind::TK_IF:
-    case TokenKind::TK_ELSE:
-    case TokenKind::TK_FOR:
-    case TokenKind::TK_WHILE:
-    case TokenKind::TK_DO:
-    case TokenKind::TK_SWITCH:
-    case TokenKind::TK_CASE:
-    case TokenKind::TK_DEFAULT:
-    case TokenKind::TK_BREAK:
-    case TokenKind::TK_CONTINUE:
-    case TokenKind::TK_DISCARD:
-    case TokenKind::TK_RETURN:
-    case TokenKind::TK_IN:
-    case TokenKind::TK_OUT:
-    case TokenKind::TK_INOUT:
-    case TokenKind::TK_UNIFORM:
-    case TokenKind::TK_CONST:
-    case TokenKind::TK_FLAT:
-    case TokenKind::TK_NOPERSPECTIVE:
-    case TokenKind::TK_INLINE:
-    case TokenKind::TK_NOINLINE:
-    case TokenKind::TK_PURE:
-    case TokenKind::TK_READONLY:
-    case TokenKind::TK_WRITEONLY:
-    case TokenKind::TK_BUFFER:
-    case TokenKind::TK_STRUCT:
-    case TokenKind::TK_LAYOUT:
-    case TokenKind::TK_HIGHP:
-    case TokenKind::TK_MEDIUMP:
-    case TokenKind::TK_LOWP:
-    case TokenKind::TK_ES3:
-    case TokenKind::TK_EXPORT:
-    case TokenKind::TK_WORKGROUP:
-    case TokenKind::TK_RESERVED:
     case TokenKind::TK_PRIVATE_IDENTIFIER:
     case TokenKind::TK_IDENTIFIER:
-    case TokenKind::TK_DIRECTIVE:
         return true;
     default:
         return false;
     }
 }
 
-static bool IsConditionWord(TokenKind kind) {
+static bool IsConditionKeyword(TokenKind kind) {
     switch (kind) {
     case TokenKind::TK_IF:
     case TokenKind::TK_FOR:
@@ -109,6 +72,10 @@ static bool IsConditionWord(TokenKind kind) {
     default:
         return false;
     }
+}
+
+static bool IsExpressionEnd(TokenKind kind) {
+    return IsNumber(kind) || IsIdentifier(kind) || kind == TokenKind::TK_RPAREN || kind == TokenKind::TK_RBRACKET;
 }
 
 std::string Formatter::Format(std::string_view content) {  // NOLINT
@@ -133,14 +100,15 @@ std::string Formatter::Format(std::string_view content) {  // NOLINT
         case TokenKind::TK_PRIVATE_IDENTIFIER:
         case TokenKind::TK_IDENTIFIER: {
             // number and identifier
-            auto last = GetLastValidToken();
+            auto last = GetLastToken();
             if (last.fKind == TokenKind::TK_PLUSPLUS || last.fKind == TokenKind::TK_MINUSMINUS ||
-                last.fKind == TokenKind::TK_BITWISENOT || last.fKind == TokenKind::TK_LOGICALNOT) {
-                // ++x, --x, ~x, !x
+                last.fKind == TokenKind::TK_BITWISENOT || last.fKind == TokenKind::TK_LOGICALNOT ||
+                last.fKind == TokenKind::TK_LPAREN || last.fKind == TokenKind::TK_LBRACKET) {
+                // ++x, --x, ~x, !x, (x, [x
                 AppendNoSpace(token);
             } else if (last.fKind == TokenKind::TK_PLUS || last.fKind == TokenKind::TK_MINUS) {
-                auto second_last = GetSecondLastValidToken();
-                if (IsWord(second_last.fKind) || IsNumber(second_last.fKind)) {
+                auto second_last = GetSecondLastToken();
+                if (IsExpressionEnd(second_last.fKind)) {
                     AppendAfterSpace(token);
                 } else {
                     AppendNoSpace(token);
@@ -186,16 +154,23 @@ std::string Formatter::Format(std::string_view content) {  // NOLINT
         case TokenKind::TK_EXPORT:
         case TokenKind::TK_WORKGROUP:
         case TokenKind::TK_RESERVED:
-        case TokenKind::TK_DIRECTIVE:
+        case TokenKind::TK_DIRECTIVE: {
             // word
-            AppendAfterSpace(token);
-            break;
-        case TokenKind::TK_LPAREN: {  // (
-            auto last = GetLastValidToken();
-            if (IsConditionWord(last.fKind) && !IsWord(last.fKind)) {
-                AppendAfterSpace(token);
-            } else {
+            auto last = GetLastToken();
+            if (last.fKind == TokenKind::TK_LPAREN || last.fKind == TokenKind::TK_LBRACKET) {
                 AppendNoSpace(token);
+            } else {
+                AppendAfterSpace(token);
+            }
+            break;
+        }
+        case TokenKind::TK_LPAREN: {  // (
+            auto last = GetLastToken();
+            if (last.fKind == TokenKind::TK_LPAREN || last.fKind == TokenKind::TK_LBRACKET ||
+                IsIdentifier(last.fKind) || !IsConditionKeyword(last.fKind)) {
+                AppendNoSpace(token);
+            } else {
+                AppendAfterSpace(token);
             }
             break;
         }
@@ -224,16 +199,24 @@ std::string Formatter::Format(std::string_view content) {  // NOLINT
             break;
         case TokenKind::TK_PLUSPLUS:      // ++
         case TokenKind::TK_MINUSMINUS: {  // --
-            auto last = GetLastValidToken();
-            if (IsWord(last.fKind) || IsNumber(last.fKind)) {
+            auto last = GetLastToken();
+            if (IsIdentifier(last.fKind) || IsNumber(last.fKind)) {
                 AppendNoSpace(token);
             } else {
                 AppendAfterSpace(token);
             }
             break;
         }
-        case TokenKind::TK_PLUS:          // +
-        case TokenKind::TK_MINUS:         // -
+        case TokenKind::TK_PLUS:     // +
+        case TokenKind::TK_MINUS: {  // -
+            auto last = GetLastToken();
+            if (last.fKind == TokenKind::TK_LPAREN || last.fKind == TokenKind::TK_LBRACKET) {
+                AppendNoSpace(token);
+            } else {
+                AppendAfterSpace(token);
+            }
+            break;
+        }
         case TokenKind::TK_STAR:          // *
         case TokenKind::TK_SLASH:         // /
         case TokenKind::TK_PERCENT:       // %
@@ -334,13 +317,11 @@ bool Formatter::IsNewLine() const {
     return new_line_type_ != NewLineType::kNone;
 }
 
-SkSL::Token Formatter::GetLastValidToken() const {
+SkSL::Token Formatter::GetLastToken() const {
     for (auto iter = line_tokens_.rbegin(); iter != line_tokens_.rend(); ++iter) {  // NOLINT
         switch (iter->fKind) {
         case TokenKind::TK_END_OF_FILE:
         case TokenKind::TK_WHITESPACE:
-        case TokenKind::TK_LINE_COMMENT:
-        case TokenKind::TK_BLOCK_COMMENT:
         case TokenKind::TK_INVALID:
         case TokenKind::TK_NONE:
             break;
@@ -351,7 +332,7 @@ SkSL::Token Formatter::GetLastValidToken() const {
     return {};
 }
 
-SkSL::Token Formatter::GetSecondLastValidToken() const {
+SkSL::Token Formatter::GetSecondLastToken() const {
     auto last = false;
     for (auto iter = line_tokens_.rbegin(); iter != line_tokens_.rend(); ++iter) {  // NOLINT
         switch (iter->fKind) {

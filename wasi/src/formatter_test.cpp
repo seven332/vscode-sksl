@@ -63,3 +63,8 @@ TEST(FormatterTest, NewLine) {
     EXPECT_STREQ(Formatter().Format("{\n\n}").c_str(), "{\n\n}\n");
     EXPECT_STREQ(Formatter().Format("{\n\n\n}").c_str(), "{\n\n}\n");
 }
+
+TEST(FormatterTest, Paren) {
+    EXPECT_STREQ(Formatter().Format("(a+b)").c_str(), "(a + b)\n");
+    EXPECT_STREQ(Formatter().Format("((a+b))").c_str(), "((a + b))\n");
+}
