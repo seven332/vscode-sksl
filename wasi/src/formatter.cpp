@@ -12,6 +12,36 @@ static bool HasNewLine(std::string_view text) {
     return text.find_first_of('\r') != std::string_view::npos || text.find_first_of('\n') != std::string_view::npos;
 }
 
+static int GetNewLines(std::string_view text) {
+    auto count = 0;
+    bool prepare = false;
+
+    auto flush_prepare = [&count, &prepare]() {
+        if (prepare) {
+            count += 1;
+            prepare = false;
+        }
+    };
+
+    for (auto c : text) {
+        switch (c) {
+        case '\n':
+            count += 1;
+            prepare = false;
+            break;
+        case '\r':
+            flush_prepare();
+            prepare = true;
+            break;
+        default:
+            flush_prepare();
+            break;
+        }
+    }
+    flush_prepare();
+    return count;
+}
+
 static bool IsNumber(TokenKind kind) {
     switch (kind) {
     case TokenKind::TK_FLOAT_LITERAL:
@@ -244,8 +274,17 @@ std::string Formatter::Format(std::string_view content) {  // NOLINT
             NewLineActively();
             break;
         }
-        case TokenKind::TK_WHITESPACE:
+        case TokenKind::TK_WHITESPACE: {
+            auto lines = GetNewLines(GetTokenText(token));
+            lines = std::min(lines, 2);
+            if (new_line_type_ == NewLineType::kActive) {
+                lines -= 1;
+            }
+            for (auto i = 0; i < lines; ++i) {
+                NewLinePassively();
+            }
             break;
+        }
         case TokenKind::TK_LINE_COMMENT:
             AppendAfterSpace(token, 2);
             NewLineActively();
