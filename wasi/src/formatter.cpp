@@ -63,17 +63,6 @@ static bool IsIdentifier(TokenKind kind) {
     }
 }
 
-static bool IsConditionKeyword(TokenKind kind) {
-    switch (kind) {
-    case TokenKind::TK_IF:
-    case TokenKind::TK_FOR:
-    case TokenKind::TK_WHILE:
-        return true;
-    default:
-        return false;
-    }
-}
-
 static bool IsExpressionEnd(TokenKind kind) {
     return IsNumber(kind) || IsIdentifier(kind) || kind == TokenKind::TK_RPAREN || kind == TokenKind::TK_RBRACKET;
 }
@@ -103,8 +92,9 @@ std::string Formatter::Format(std::string_view content) {  // NOLINT
             auto last = GetLastToken();
             if (last.fKind == TokenKind::TK_PLUSPLUS || last.fKind == TokenKind::TK_MINUSMINUS ||
                 last.fKind == TokenKind::TK_BITWISENOT || last.fKind == TokenKind::TK_LOGICALNOT ||
-                last.fKind == TokenKind::TK_LPAREN || last.fKind == TokenKind::TK_LBRACKET) {
-                // ++x, --x, ~x, !x, (x, [x
+                last.fKind == TokenKind::TK_LPAREN || last.fKind == TokenKind::TK_LBRACKET ||
+                last.fKind == TokenKind::TK_DOT) {
+                // ++x, --x, ~x, !x, (x, [x, .x
                 AppendNoSpace(token);
             } else if (last.fKind == TokenKind::TK_PLUS || last.fKind == TokenKind::TK_MINUS) {
                 auto second_last = GetSecondLastToken();
@@ -167,7 +157,7 @@ std::string Formatter::Format(std::string_view content) {  // NOLINT
         case TokenKind::TK_LPAREN: {  // (
             auto last = GetLastToken();
             if (last.fKind == TokenKind::TK_LPAREN || last.fKind == TokenKind::TK_LBRACKET ||
-                IsIdentifier(last.fKind) || !IsConditionKeyword(last.fKind)) {
+                IsIdentifier(last.fKind)) {
                 AppendNoSpace(token);
             } else {
                 AppendAfterSpace(token);
@@ -179,7 +169,7 @@ std::string Formatter::Format(std::string_view content) {  // NOLINT
             break;
         case TokenKind::TK_LBRACE:  // {
             AppendAfterSpace(token);
-            PipeCommentBeforeNewLine(&lexer);
+            PipeBeforeNewLine(&lexer, PipeType::kComment);
             NewLineActively();
             IncreaseIndent();
             break;
@@ -189,7 +179,9 @@ std::string Formatter::Format(std::string_view content) {  // NOLINT
             }
             DecreaseIndent();
             AppendAfterSpace(token);
-            NewLineActively();
+            if (PipeBeforeNewLine(&lexer, PipeType::kComment | PipeType::kSemicolon | PipeType::kElse)) {
+                NewLineActively();
+            }
             break;
         case TokenKind::TK_LBRACKET:  // [
         case TokenKind::TK_RBRACKET:  // ]
@@ -253,13 +245,20 @@ std::string Formatter::Format(std::string_view content) {  // NOLINT
             break;
         case TokenKind::TK_SEMICOLON: {  // ;
             AppendNoSpace(token);
-            PipeCommentBeforeNewLine(&lexer);
+            PipeBeforeNewLine(&lexer, PipeType::kComment);
             NewLineActively();
             break;
         }
         case TokenKind::TK_WHITESPACE: {
             auto lines = GetNewLines(GetTokenText(token));
-            lines = std::min(lines, 2);
+            int max_lines = 2;
+            auto save = lexer.getCheckpoint();
+            if (lexer.next().fKind == TokenKind::TK_END_OF_FILE) {
+                max_lines = 1;
+            }
+            lexer.rewindToCheckpoint(save);
+            lines = std::min(lines, max_lines);
+
             if (new_line_type_ == NewLineType::kActive) {
                 lines -= 1;
             }
@@ -288,8 +287,7 @@ std::string Formatter::Format(std::string_view content) {  // NOLINT
     return std::move(result_);
 }
 
-// Append command to result before new line
-void Formatter::PipeCommentBeforeNewLine(SkSL::Lexer* lexer) {
+bool Formatter::PipeBeforeNewLine(SkSL::Lexer* lexer, std::uint8_t type) {
     for (;;) {
         auto save = lexer->getCheckpoint();
         auto token = lexer->next();
@@ -298,19 +296,25 @@ void Formatter::PipeCommentBeforeNewLine(SkSL::Lexer* lexer) {
                 lexer->rewindToCheckpoint(save);
                 break;
             }
-        } else if (token.fKind == TokenKind::TK_LINE_COMMENT) {
+        } else if ((type & PipeType::kComment) && token.fKind == TokenKind::TK_LINE_COMMENT) {
             AppendAfterSpace(token, 2);
             break;
-        } else if (token.fKind == TokenKind::TK_BLOCK_COMMENT) {
+        } else if ((type & PipeType::kComment) && token.fKind == TokenKind::TK_BLOCK_COMMENT) {
             AppendAfterSpace(token);
             if (HasNewLine(GetTokenText(token))) {
                 break;
             }
+        } else if ((type & PipeType::kSemicolon) && token.fKind == TokenKind::TK_SEMICOLON) {
+            AppendNoSpace(token);
+        } else if ((type & PipeType::kElse) && token.fKind == TokenKind::TK_ELSE) {
+            AppendAfterSpace(token);
+            return false;
         } else {
             lexer->rewindToCheckpoint(save);
             break;
         }
     }
+    return true;
 }
 
 bool Formatter::IsNewLine() const {

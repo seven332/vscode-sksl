@@ -2,6 +2,7 @@
 
 #include <src/sksl/SkSLLexer.h>
 
+#include <cstdint>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -11,10 +12,16 @@ class Formatter {
     std::string Format(std::string_view content);
 
  private:
-    enum class NewLineType {
+    enum class NewLineType : std::uint8_t {
         kNone,
         kActive,
         kPassive,
+    };
+
+    enum PipeType : std::uint8_t {
+        kComment = 1,
+        kSemicolon = 2,
+        kElse = 4,
     };
 
     std::string_view content_;
@@ -23,7 +30,7 @@ class Formatter {
     NewLineType new_line_type_ = NewLineType::kActive;
     std::vector<SkSL::Token> line_tokens_;
 
-    void PipeCommentBeforeNewLine(SkSL::Lexer* lexer);
+    bool PipeBeforeNewLine(SkSL::Lexer* lexer, std::uint8_t type);
 
     [[nodiscard]] bool IsNewLine() const;
     [[nodiscard]] SkSL::Token GetLastToken() const;
