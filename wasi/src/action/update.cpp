@@ -49,10 +49,10 @@ static SkSL::ProgramKind ToProgramKind(const std::string& kind) {
         return SkSL::ProgramKind::kRuntimeColorFilter;
     case Hash("blender"):
         return SkSL::ProgramKind::kRuntimeBlender;
-    case Hash("mesh-vert"):
-        return SkSL::ProgramKind::kMeshVertex;
-    case Hash("mesh-frag"):
+    case Hash("meshfrag"):
         return SkSL::ProgramKind::kMeshFragment;
+    case Hash("meshvert"):
+        return SkSL::ProgramKind::kMeshVertex;
     default:
         std::cerr << "Abort: invalid program kind: " << kind << std::endl;
         std::abort();

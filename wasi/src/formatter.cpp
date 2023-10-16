@@ -143,6 +143,7 @@ std::string Formatter::Format(std::string_view content) {  // NOLINT
         case TokenKind::TK_ES3:
         case TokenKind::TK_EXPORT:
         case TokenKind::TK_WORKGROUP:
+        case TokenKind::TK_PIXELLOCAL:
         case TokenKind::TK_RESERVED:
         case TokenKind::TK_DIRECTIVE: {
             // word

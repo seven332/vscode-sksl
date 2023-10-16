@@ -7,8 +7,8 @@ export enum SkSLProgramKind {
     kShader = 'shader',
     kColorFilter = 'colorfilter',
     kBlender = 'blender',
-    kMeshVert = 'mesh-vert',
-    kMeshFrag = 'mesh-frag',
+    kMeshFrag = 'meshfrag',
+    kMeshVert = 'meshvert',
 }
 
 export const getSkSLProgramKind = (content: string): SkSLProgramKind | undefined => {

@@ -8,8 +8,8 @@ describe('getSkSLProgramKind', () => {
         expect(getSkSLProgramKind('// kind=shader')).toBe(SkSLProgramKind.kShader)
         expect(getSkSLProgramKind('// kind=colorfilter')).toBe(SkSLProgramKind.kColorFilter)
         expect(getSkSLProgramKind('// kind=blender')).toBe(SkSLProgramKind.kBlender)
-        expect(getSkSLProgramKind('// kind=mesh-vert')).toBe(SkSLProgramKind.kMeshVert)
-        expect(getSkSLProgramKind('// kind=mesh-frag')).toBe(SkSLProgramKind.kMeshFrag)
+        expect(getSkSLProgramKind('// kind=meshfrag')).toBe(SkSLProgramKind.kMeshFrag)
+        expect(getSkSLProgramKind('// kind=meshvert')).toBe(SkSLProgramKind.kMeshVert)
     })
 
     it('two line', () => {
