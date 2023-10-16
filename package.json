@@ -21,6 +21,7 @@
         "url": "https://github.com/seven332/vscode-sksl/issues"
     },
     "main": "./build/index.js",
+    "icon": "icon.png",
     "engines": {
         "vscode": "^1.77.0"
     },
@@ -35,8 +36,8 @@
             {
                 "id": "sksl",
                 "aliases": [
-                    "SKSL",
                     "SkSL",
+                    "SKSL",
                     "sksl"
                 ],
                 "extensions": [
