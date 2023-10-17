@@ -68,3 +68,15 @@ struct SkSLSymbol {
         Write(bytes, value.children);
     }
 };
+
+struct SkSLToken {
+    SkSLRange range;
+    std::uint32_t tokenType = 0;       // NOLINT
+    std::uint32_t tokenModifiers = 0;  // NOLINT
+
+    friend void Write(std::vector<std::byte>* bytes, const SkSLToken& value) {
+        Write(bytes, value.range);
+        Write(bytes, static_cast<int>(value.tokenType));
+        Write(bytes, static_cast<int>(value.tokenModifiers));
+    }
+};

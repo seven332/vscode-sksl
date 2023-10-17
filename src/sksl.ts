@@ -27,6 +27,7 @@ export enum Url {
     kClose = 'sksl/close',
     kGetSymbol = 'sksl/get-symbol',
     kFormat = 'sksl/format',
+    kGetToken = 'sksl/get-token',
 }
 
 export interface SkSLRange {
@@ -79,6 +80,18 @@ export const dummySkSLSymbol: SkSLSymbol = (() => {
     return dummy
 })()
 
+export interface SkSLToken {
+    range: SkSLRange
+    tokenType: uinteger
+    tokenModifiers: uinteger
+}
+
+export const dummySkSLToken: SkSLToken = {
+    range: dummySkSLRange,
+    tokenType: 0,
+    tokenModifiers: 0,
+}
+
 export interface UpdateParams {
     file: string
     content: string
@@ -129,4 +142,16 @@ export interface FormatResult {
 
 export const dummyFormatResult: FormatResult = {
     newContent: '',
+}
+
+export interface GetTokenParams {
+    file: string
+}
+
+export interface GetTokenResult {
+    tokens: SkSLToken[]
+}
+
+export const dummyGetTokenResult: GetTokenResult = {
+    tokens: [dummySkSLToken],
 }

@@ -7,6 +7,8 @@ import {
     FormatResult,
     GetSymbolParams,
     GetSymbolResult,
+    GetTokenParams,
+    GetTokenResult,
     SkSLProgramKind,
     SkSLRange,
     SkSLSymbol,
@@ -31,8 +33,8 @@ connection.onInitialize(() => {
             documentFormattingProvider: true,
             semanticTokensProvider: {
                 legend: {
-                    tokenTypes: [],
-                    tokenModifiers: [],
+                    tokenTypes: ['class', 'interface', 'struct', 'parameter', 'variable', 'property', 'function'],
+                    tokenModifiers: ['readonly', 'defaultLibrary'],
                 },
                 range: false,
                 full: true,
@@ -96,8 +98,9 @@ connection.onDocumentFormatting((params) => {
 })
 
 connection.onRequest(ls.SemanticTokensRequest.method, (params: ls.SemanticTokensParams) => {
-    params.textDocument.uri
-    // TODO:
+    const uri = params.textDocument.uri
+    const file = URI.parse(uri).fsPath
+    return getSemanticTokens(file)
 })
 
 connection.onRequest(Url.kError, (error: string) => {
@@ -196,6 +199,33 @@ async function format(file: string): Promise<ls.TextEdit[]> {
             result.newContent,
         ),
     ]
+}
+
+async function getSemanticTokens(file: string): Promise<ls.SemanticTokens> {
+    const builder = new ls.SemanticTokensBuilder()
+
+    const filePosition = filePositions.get(file)
+    if (!filePosition) {
+        return builder.build()
+    }
+
+    const params: GetTokenParams = { file }
+    const result: GetTokenResult = await request(Url.kGetToken, file, params)
+
+    for (const token of result.tokens) {
+        const range = toRange(filePosition, token.range)
+        if (range.start.line == range.end.line) {
+            builder.push(
+                range.start.line,
+                range.start.character,
+                range.end.character - range.start.character,
+                token.tokenType,
+                token.tokenModifiers,
+            )
+        }
+    }
+
+    return builder.build()
 }
 
 async function request<Params, Result>(url: string, file: string, params: Params): Promise<Result> {

@@ -8,8 +8,9 @@ add_library(sksl-wasi-lib STATIC
     semaphore.cpp
     action/update.cpp
     action/close.cpp
-    action/get_symbol.cpp
     action/format.cpp
+    action/get_symbol.cpp
+    action/get_token.cpp
 )
 target_include_directories(sksl-wasi-lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(sksl-wasi-lib PUBLIC skia_sksl)

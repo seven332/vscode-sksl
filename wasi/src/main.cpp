@@ -9,6 +9,7 @@
 #include "action/close.h"
 #include "action/format.h"
 #include "action/get_symbol.h"
+#include "action/get_token.h"
 #include "action/update.h"
 #include "hash.h"
 #include "module.h"
@@ -80,6 +81,10 @@ int main(void) {
         }
         case Hash("sksl/format"): {
             CALL(Format)
+            break;
+        }
+        case Hash("sksl/get-token"): {
+            CALL(GetToken)
             break;
         }
         default:

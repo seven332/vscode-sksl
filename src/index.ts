@@ -2,7 +2,14 @@ import * as path from 'path'
 import { ExtensionContext } from 'vscode'
 import { LanguageClient, TransportKind } from 'vscode-languageclient/node'
 import { SkSL } from './sksl-wasi'
-import { Url, dummyCloseResult, dummyFormatResult, dummyGetSymbolResult, dummyUpdateResult } from './sksl'
+import {
+    Url,
+    dummyCloseResult,
+    dummyFormatResult,
+    dummyGetSymbolResult,
+    dummyGetTokenResult,
+    dummyUpdateResult,
+} from './sksl'
 import { decode, encode } from './simple-codec'
 
 let client: LanguageClient | undefined
@@ -41,6 +48,7 @@ export async function activate(context: ExtensionContext) {
     onRequest(Url.kClose, dummyCloseResult)
     onRequest(Url.kGetSymbol, dummyGetSymbolResult)
     onRequest(Url.kFormat, dummyFormatResult)
+    onRequest(Url.kGetToken, dummyGetTokenResult)
 
     sksl.setOnError((error: string) => {
         client?.sendRequest(Url.kError, error)

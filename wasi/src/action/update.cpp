@@ -123,6 +123,7 @@ UpdateResult Update(Modules* modules, UpdateParams params) {
 
     static const auto kBuiltinModule = CompileBuiltinModule();
     auto kind = ToProgramKind(params.kind);
+    // TODO: it's not safe in small string optimization
     std::string_view content = params.content;
     auto module =
         CompileModule(&compiler, kind, params.file.c_str(), std::move(params.content), kBuiltinModule.get(), nullptr);
