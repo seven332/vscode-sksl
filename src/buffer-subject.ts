@@ -65,7 +65,7 @@ class Buffer {
     }
 
     public reset() {
-        this.size = 0;
+        this.size = 0
     }
 
     public append(data: Uint8Array): Uint8Array | undefined {

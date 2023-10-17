@@ -1,4 +1,4 @@
-import { BufferSubject } from "./buffer-subject"
+import { BufferSubject } from './buffer-subject'
 
 describe('BufferSubject', () => {
     describe('one by one', () => {
@@ -21,8 +21,8 @@ describe('BufferSubject', () => {
 
         it('request', async () => {
             const subject = new BufferSubject()
-            const p1 = subject.next();
-            const p2 = subject.next();
+            const p1 = subject.next()
+            const p2 = subject.next()
             subject.append(Uint8Array.from([1]))
             subject.append(Uint8Array.from([0]))
             subject.append(Uint8Array.from([0]))
@@ -49,8 +49,8 @@ describe('BufferSubject', () => {
 
         it('request', async () => {
             const subject = new BufferSubject()
-            const p1 = subject.next();
-            const p2 = subject.next();
+            const p1 = subject.next()
+            const p2 = subject.next()
             subject.append(Uint8Array.from([1, 0, 0, 0, 8, 2, 0, 0, 0, 8, 9]))
             expect(await p1).toStrictEqual(Uint8Array.from([8]))
             expect(await p2).toStrictEqual(Uint8Array.from([8, 9]))
@@ -58,12 +58,12 @@ describe('BufferSubject', () => {
 
         it('half', async () => {
             const subject = new BufferSubject()
-            const p1 = subject.next();
-            const p2 = subject.next();
+            const p1 = subject.next()
+            const p2 = subject.next()
             subject.append(Uint8Array.from([1, 0, 0]))
             subject.append(Uint8Array.from([0, 8, 2, 0, 0, 0, 8, 9]))
             expect(await p1).toStrictEqual(Uint8Array.from([8]))
             expect(await p2).toStrictEqual(Uint8Array.from([8, 9]))
         })
-    });
+    })
 })
