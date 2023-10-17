@@ -1,6 +1,6 @@
 {
     "name": "vscode-sksl",
-    "publisher": "Hippo",
+    "publisher": "seven332",
     "version": "0.1.0",
     "displayName": "SkSL Language Server",
     "description": "Code IntelliSense for Skia's shading language.",
