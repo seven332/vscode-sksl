@@ -51,7 +51,7 @@ extern "C" {
 #define CALL(Action)                                                                          \
     Action##Params params;                                                                    \
     Read(GetBytes(), 0, &params);                                                             \
-    auto result = Action(&modules, params);                                                   \
+    auto result = Action(&modules, std::move(params));                                        \
     std::vector<std::byte> buffer;                                                            \
     Write(&buffer, result);                                                                   \
     std::uint32_t size = buffer.size();                                                       \

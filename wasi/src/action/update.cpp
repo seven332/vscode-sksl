@@ -115,7 +115,7 @@ static std::unique_ptr<SkSL::Module> CompileBuiltinModule() {
     return public_module;
 }
 
-UpdateResult Update(Modules* modules, const UpdateParams& params) {
+UpdateResult Update(Modules* modules, UpdateParams params) {
     SkSL::Compiler compiler(SkSL::ShaderCapsFactory::Standalone());
 
     SkSLErrorReporter error_reporter;
@@ -129,8 +129,8 @@ UpdateResult Update(Modules* modules, const UpdateParams& params) {
     error_reporter.FetchErrors(&result.errors);
     result.succeed = module != nullptr;
     if (result.succeed) {
-        (*modules)[params.file] = {
-            .content = params.content,
+        (*modules)[std::move(params.file)] = {
+            .content = std::move(params.content),
             .module = std::move(module),
         };
     }

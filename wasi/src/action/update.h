@@ -30,4 +30,4 @@ struct UpdateResult {
     }
 };
 
-UpdateResult Update(Modules* modules, const UpdateParams& params);
+UpdateResult Update(Modules* modules, UpdateParams params);
