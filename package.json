@@ -43,7 +43,11 @@
                 "extensions": [
                     "sksl"
                 ],
-                "configuration": "./build/language.json"
+                "configuration": "./build/language.json",
+                "icon": {
+                    "light": "sksl.png",
+                    "dark": "sksl.png"
+                }
             }
         ],
         "grammars": [
