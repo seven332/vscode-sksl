@@ -10,6 +10,7 @@
 #include <iostream>
 #include <src/sksl/generated/sksl_public.minified.sksl>
 #include <src/sksl/generated/sksl_shared.minified.sksl>
+#include <string>
 
 #include "hash.h"
 
@@ -116,6 +117,11 @@ static std::unique_ptr<SkSL::Module> CompileBuiltinModule() {
 }
 
 UpdateResult Update(Modules* modules, UpdateParams params) {
+    if (params.content.size() <= sizeof(std::string)) {
+        // Avoid small string optimization
+        return {.succeed = false};
+    }
+
     SkSL::Compiler compiler(SkSL::ShaderCapsFactory::Standalone());
 
     SkSLErrorReporter error_reporter;
@@ -123,7 +129,6 @@ UpdateResult Update(Modules* modules, UpdateParams params) {
 
     static const auto kBuiltinModule = CompileBuiltinModule();
     auto kind = ToProgramKind(params.kind);
-    // TODO: it's not safe in small string optimization
     std::string_view content = params.content;
     auto module =
         CompileModule(&compiler, kind, params.file.c_str(), std::move(params.content), kBuiltinModule.get(), nullptr);
