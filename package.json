@@ -45,8 +45,8 @@
                 ],
                 "configuration": "./build/language.json",
                 "icon": {
-                    "light": "sksl.png",
-                    "dark": "sksl.png"
+                    "light": "sksl-light.png",
+                    "dark": "sksl-dark.png"
                 }
             }
         ],
