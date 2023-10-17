@@ -123,14 +123,16 @@ UpdateResult Update(Modules* modules, UpdateParams params) {
 
     static const auto kBuiltinModule = CompileBuiltinModule();
     auto kind = ToProgramKind(params.kind);
-    auto module = CompileModule(&compiler, kind, params.file.c_str(), params.content, kBuiltinModule.get(), nullptr);
+    std::string_view content = params.content;
+    auto module =
+        CompileModule(&compiler, kind, params.file.c_str(), std::move(params.content), kBuiltinModule.get(), nullptr);
 
     UpdateResult result;
     error_reporter.FetchErrors(&result.errors);
     result.succeed = module != nullptr;
     if (result.succeed) {
         (*modules)[std::move(params.file)] = {
-            .content = std::move(params.content),
+            .content = content,
             .module = std::move(module),
         };
     }

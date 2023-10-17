@@ -7,7 +7,7 @@
 #include <unordered_map>
 
 struct Module {
-    std::string content;
+    std::string_view content;
     std::unique_ptr<SkSL::Module> module;
 };
 

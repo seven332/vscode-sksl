@@ -15,8 +15,8 @@
 #include "data.h"
 #include "lexer.h"
 
-static SkSLRange Find(const std::string& content, const SkSLRange& range, std::string_view name) {
-    auto text = std::string_view(content.data() + range.start, content.data() + range.end);
+static SkSLRange Find(std::string_view content, const SkSLRange& range, std::string_view name) {
+    auto text = content.substr(range.start, range.end - range.start);
     auto result = FindIdentifier(text, name);
     if (result.IsValid()) {
         result.Offset(static_cast<int>(range.start));
@@ -26,7 +26,7 @@ static SkSLRange Find(const std::string& content, const SkSLRange& range, std::s
     }
 }
 
-static std::vector<SkSLSymbol> ToFieldSymbols(const SkSL::Type& type, const std::string& content) {
+static std::vector<SkSLSymbol> ToFieldSymbols(const SkSL::Type& type, std::string_view content) {
     std::vector<SkSLSymbol> children;
     children.reserve(type.fields().size());
     for (const auto& field : type.fields()) {
@@ -41,8 +41,7 @@ static std::vector<SkSLSymbol> ToFieldSymbols(const SkSL::Type& type, const std:
     return children;
 }
 
-static void
-Parse(std::vector<SkSLSymbol>* symbols, const SkSL::FunctionDefinition& element, const std::string& content) {
+static void Parse(std::vector<SkSLSymbol>* symbols, const SkSL::FunctionDefinition& element, std::string_view content) {
     auto range = SkSLRange(element.position());
     range.Join(element.declaration().position());
     range.Join(element.body()->position());
@@ -59,8 +58,7 @@ Parse(std::vector<SkSLSymbol>* symbols, const SkSL::FunctionDefinition& element,
     });
 }
 
-static void
-Parse(std::vector<SkSLSymbol>* symbols, const SkSL::FunctionPrototype& element, const std::string& content) {
+static void Parse(std::vector<SkSLSymbol>* symbols, const SkSL::FunctionPrototype& element, std::string_view content) {
     auto range = SkSLRange(element.position());
     range.Join(element.declaration().position());
 
@@ -77,7 +75,7 @@ Parse(std::vector<SkSLSymbol>* symbols, const SkSL::FunctionPrototype& element, 
 }
 
 static void
-Parse(std::vector<SkSLSymbol>* symbols, const SkSL::GlobalVarDeclaration& element, const std::string& content) {
+Parse(std::vector<SkSLSymbol>* symbols, const SkSL::GlobalVarDeclaration& element, std::string_view content) {
     auto range = SkSLRange(element.position());
     range.Join(element.varDeclaration().position());
     range.Join(element.varDeclaration().var()->position());
@@ -94,7 +92,7 @@ Parse(std::vector<SkSLSymbol>* symbols, const SkSL::GlobalVarDeclaration& elemen
     });
 }
 
-static void Parse(std::vector<SkSLSymbol>* symbols, const SkSL::InterfaceBlock& element, const std::string& content) {
+static void Parse(std::vector<SkSLSymbol>* symbols, const SkSL::InterfaceBlock& element, std::string_view content) {
     {
         const auto& type = element.var()->type();
         auto name = type.name();
@@ -129,7 +127,7 @@ static void Parse(std::vector<SkSLSymbol>* symbols, const SkSL::InterfaceBlock& 
     }
 }
 
-static void Parse(std::vector<SkSLSymbol>* symbols, const SkSL::StructDefinition& element, const std::string& content) {
+static void Parse(std::vector<SkSLSymbol>* symbols, const SkSL::StructDefinition& element, std::string_view content) {
     auto range = SkSLRange(element.position());
     range.Join(element.type().position());
 
