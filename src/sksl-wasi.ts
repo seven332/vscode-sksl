@@ -32,20 +32,19 @@ export class SkSL {
     }
 
     public async request(url: string, params: Uint8Array): Promise<Uint8Array> {
-        // write url
-        const length = new Uint8Array(4)
-        const buffer = encode(url)
-        new DataView(length.buffer).setUint32(0, buffer.length, true)
-        await this.wasmProcess.stdin?.write(length)
-        await this.wasmProcess.stdin?.write(buffer)
-        // write params
-        new DataView(length.buffer).setUint32(0, params.length, true)
-        await this.wasmProcess.stdin?.write(length)
-        await this.wasmProcess.stdin?.write(params)
+        this.write(encode(url))
+        this.write(params)
         return await this.outSubject.next()
     }
 
     private constructor(private wasmProcess: WasmProcess) {}
+
+    private async write(bytes: Uint8Array) {
+        const buffer = new Uint8Array(4 + bytes.byteLength)
+        new DataView(buffer.buffer).setUint32(0, bytes.byteLength, true)
+        buffer.set(bytes, 4)
+        await this.wasmProcess.stdin?.write(buffer)
+    }
 
     private flushError() {
         if (this.onError) {
