@@ -37,12 +37,6 @@ class SkSLErrorReporter : public SkSL::ErrorReporter {
 
 static SkSL::ProgramKind ToProgramKind(const std::string& kind) {
     switch (Hash(kind.data())) {
-    case Hash("frag"):
-        return SkSL::ProgramKind::kFragment;
-    case Hash("vert"):
-        return SkSL::ProgramKind::kVertex;
-    case Hash("compute"):
-        return SkSL::ProgramKind::kCompute;
     case Hash("shader"):
         return SkSL::ProgramKind::kRuntimeShader;
     case Hash("colorfilter"):

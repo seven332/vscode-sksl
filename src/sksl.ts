@@ -1,9 +1,6 @@
 import { uinteger } from 'vscode-languageclient'
 
 export enum SkSLProgramKind {
-    kFrag = 'frag',
-    kVert = 'vert',
-    kCompute = 'compute',
     kShader = 'shader',
     kColorFilter = 'colorfilter',
     kBlender = 'blender',
