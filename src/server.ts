@@ -33,7 +33,16 @@ connection.onInitialize(() => {
             documentFormattingProvider: true,
             semanticTokensProvider: {
                 legend: {
-                    tokenTypes: ['class', 'interface', 'struct', 'parameter', 'variable', 'property', 'function'],
+                    tokenTypes: [
+                        'class',
+                        'interface',
+                        'struct',
+                        'parameter',
+                        'variable',
+                        'property',
+                        'decorator',
+                        'function',
+                    ],
                     tokenModifiers: ['readonly', 'defaultLibrary'],
                 },
                 range: false,
@@ -104,7 +113,7 @@ connection.onRequest(ls.SemanticTokensRequest.method, (params: ls.SemanticTokens
 })
 
 connection.onRequest(Url.kError, (error: string) => {
-    console.log(`sksl-wasi-error: ${error}`)
+    console.log(`sksl-wasi: ${error}`)
 })
 
 documents.listen(connection)

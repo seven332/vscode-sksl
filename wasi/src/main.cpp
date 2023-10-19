@@ -20,9 +20,14 @@ static Modules modules;
 #pragma mark - Main
 
 static std::byte GetByte() {
+    static constexpr int kMax = 0xFF;
     int c = std::cin.get();
     if (c == std::istream::traits_type::eof()) {
         std::cerr << "cin eof" << std::endl;
+        std::abort();
+    }
+    if (c > kMax) {
+        std::cerr << "invalid char: " << c << std::endl;
         std::abort();
     }
     return static_cast<std::byte>(c);
@@ -66,6 +71,7 @@ int main(void) {
     while (true) {
         std::string url;
         Read(GetBytes(), 0, &url);
+        std::cerr << url << " start" << std::endl;
         switch (Hash(url.data())) {
         case Hash("sksl/update"): {
             CALL(Update)
@@ -91,6 +97,7 @@ int main(void) {
             std::cerr << "Abort: invalid url " << url << std::endl;
             std::abort();
         }
+        std::cerr << url << " end" << std::endl;
     }
     return 0;
 }

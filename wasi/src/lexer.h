@@ -5,4 +5,4 @@
 
 #include "data.h"
 
-SkSLRange FindIdentifier(std::string_view text, std::string_view name);
+SkSLRange FindIdentifier(std::string_view content, std::string_view name);

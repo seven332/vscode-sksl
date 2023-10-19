@@ -5,26 +5,26 @@
 
 using TokenKind = SkSL::Token::Kind;
 
-static SkSLRange Find(std::string_view text, std::string_view name, TokenKind kind) {
+static SkSLRange Find(std::string_view content, std::string_view name, TokenKind kind) {
     SkSL::Lexer lexer;
-    lexer.start(text);
+    lexer.start(content);
     SkSL::Token token;
     for (;;) {
         token = lexer.next();
         if (token.fKind == TokenKind::TK_END_OF_FILE) {
             break;
         }
-        if (token.fKind == kind && text.substr(token.fOffset, token.fLength) == name) {
+        if (token.fKind == kind && content.substr(token.fOffset, token.fLength) == name) {
             return SkSLRange(token.fOffset, token.fOffset + token.fLength);
         }
     }
     return SkSLRange();
 }
 
-SkSLRange FindIdentifier(std::string_view text, std::string_view name) {
+SkSLRange FindIdentifier(std::string_view content, std::string_view name) {
     if (name.starts_with('$')) {
-        return Find(text, name, TokenKind::TK_PRIVATE_IDENTIFIER);
+        return Find(content, name, TokenKind::TK_PRIVATE_IDENTIFIER);
     } else {
-        return Find(text, name, TokenKind::TK_IDENTIFIER);
+        return Find(content, name, TokenKind::TK_IDENTIFIER);
     }
 }
