@@ -369,7 +369,7 @@ GetTokenResult GetToken(Modules* modules, const GetTokenParams& params) {
         .content = iter->second.content,
         .tokens = &result.tokens,
     };
-    for (const auto& element : iter->second.module->fElements) {
+    for (const auto& element : iter->second.program->fOwnedElements) {
         Parse(element.get(), &context);
     }
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <src/sksl/SkSLCompiler.h>
+#include <src/sksl/ir/SkSLProgram.h>
 
 #include <memory>
 #include <string>
@@ -8,7 +8,7 @@
 
 struct Module {
     std::string_view content;
-    std::unique_ptr<SkSL::Module> module;
+    std::unique_ptr<SkSL::Program> program;
 };
 
 using Modules = std::unordered_map<std::string, Module>;

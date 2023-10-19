@@ -152,7 +152,7 @@ GetSymbolResult GetSymbol(Modules* modules, const GetSymbolParams& params) {
         return result;
     }
 
-    for (const auto& element : iter->second.module->fElements) {
+    for (const auto& element : iter->second.program->fOwnedElements) {
         switch (element->kind()) {
         case SkSL::ProgramElementKind::kExtension: {
             auto& extension = element->as<SkSL::Extension>();
