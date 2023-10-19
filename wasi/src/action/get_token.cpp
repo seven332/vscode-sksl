@@ -1,5 +1,40 @@
 #include "get_token.h"
 
+#include <src/sksl/SkSLPosition.h>
+#include <src/sksl/ir/SkSLBinaryExpression.h>
+#include <src/sksl/ir/SkSLBlock.h>
+#include <src/sksl/ir/SkSLChildCall.h>
+#include <src/sksl/ir/SkSLConstructor.h>
+#include <src/sksl/ir/SkSLDoStatement.h>
+#include <src/sksl/ir/SkSLExpression.h>
+#include <src/sksl/ir/SkSLExpressionStatement.h>
+#include <src/sksl/ir/SkSLExtension.h>
+#include <src/sksl/ir/SkSLFieldAccess.h>
+#include <src/sksl/ir/SkSLFieldSymbol.h>
+#include <src/sksl/ir/SkSLForStatement.h>
+#include <src/sksl/ir/SkSLFunctionCall.h>
+#include <src/sksl/ir/SkSLFunctionDeclaration.h>
+#include <src/sksl/ir/SkSLFunctionDefinition.h>
+#include <src/sksl/ir/SkSLFunctionPrototype.h>
+#include <src/sksl/ir/SkSLIfStatement.h>
+#include <src/sksl/ir/SkSLIndexExpression.h>
+#include <src/sksl/ir/SkSLInterfaceBlock.h>
+#include <src/sksl/ir/SkSLPostfixExpression.h>
+#include <src/sksl/ir/SkSLPrefixExpression.h>
+#include <src/sksl/ir/SkSLReturnStatement.h>
+#include <src/sksl/ir/SkSLSetting.h>
+#include <src/sksl/ir/SkSLStructDefinition.h>
+#include <src/sksl/ir/SkSLSwitchCase.h>
+#include <src/sksl/ir/SkSLSwitchStatement.h>
+#include <src/sksl/ir/SkSLSwizzle.h>
+#include <src/sksl/ir/SkSLSymbol.h>
+#include <src/sksl/ir/SkSLTernaryExpression.h>
+#include <src/sksl/ir/SkSLType.h>
+#include <src/sksl/ir/SkSLTypeReference.h>
+#include <src/sksl/ir/SkSLVarDeclarations.h>
+#include <src/sksl/ir/SkSLVariable.h>
+#include <src/sksl/ir/SkSLVariableReference.h>
+
 #include <algorithm>
 #include <cstdint>
 #include <iostream>
@@ -9,30 +44,6 @@
 
 #include "data.h"
 #include "lexer.h"
-#include "src/sksl/SkSLPosition.h"
-#include "src/sksl/ir/SkSLBinaryExpression.h"
-#include "src/sksl/ir/SkSLBlock.h"
-#include "src/sksl/ir/SkSLChildCall.h"
-#include "src/sksl/ir/SkSLDoStatement.h"
-#include "src/sksl/ir/SkSLExpression.h"
-#include "src/sksl/ir/SkSLExpressionStatement.h"
-#include "src/sksl/ir/SkSLExtension.h"
-#include "src/sksl/ir/SkSLFieldSymbol.h"
-#include "src/sksl/ir/SkSLForStatement.h"
-#include "src/sksl/ir/SkSLFunctionCall.h"
-#include "src/sksl/ir/SkSLFunctionDeclaration.h"
-#include "src/sksl/ir/SkSLFunctionDefinition.h"
-#include "src/sksl/ir/SkSLFunctionPrototype.h"
-#include "src/sksl/ir/SkSLIfStatement.h"
-#include "src/sksl/ir/SkSLInterfaceBlock.h"
-#include "src/sksl/ir/SkSLReturnStatement.h"
-#include "src/sksl/ir/SkSLStructDefinition.h"
-#include "src/sksl/ir/SkSLSwitchCase.h"
-#include "src/sksl/ir/SkSLSwitchStatement.h"
-#include "src/sksl/ir/SkSLSymbol.h"
-#include "src/sksl/ir/SkSLType.h"
-#include "src/sksl/ir/SkSLVarDeclarations.h"
-#include "src/sksl/ir/SkSLVariable.h"
 
 enum class TokenType : std::uint32_t {
     kClass,
@@ -127,6 +138,14 @@ static void PushReference(const SkSL::Variable* var, SkSL::Position position, Co
     Push(context, range, type, modifiers);
 }
 
+static void PushReference(const SkSL::Field* field, SkSL::Position position, Context* context) {
+    if (!field) {
+        return;
+    }
+    auto range = FindIdentifier(context->content, field->fName, position);
+    Push(context, range, TokenType::kProperty, 0);
+}
+
 // NOLINTNEXTLINE
 static void Parse(const SkSL::Symbol* symbol, Context* context) {
     if (!symbol || !context->symbols.insert(symbol).second) {
@@ -135,7 +154,7 @@ static void Parse(const SkSL::Symbol* symbol, Context* context) {
 
     switch (symbol->kind()) {
     case SkSL::SymbolKind::kExternal:
-        // TODO:
+        // None
         break;
     case SkSL::SymbolKind::kField: {
         const auto& fs = symbol->as<SkSL::FieldSymbol>();
@@ -196,7 +215,12 @@ static void Parse(const SkSL::Expression* expression, Context* context) {
     case SkSL::ExpressionKind::kChildCall: {
         const auto& cc = expression->as<SkSL::ChildCall>();
         PushReference(&cc.child(), cc.position(), context);
-        // TODO: eval
+
+        auto range = FindIdentifier(context->content, "eval", cc.position());
+        if (range.IsValid()) {
+            Push(context, range, TokenType::kFunction, TokenModifier::kDefaultLibrary);
+        }
+
         for (const auto& child : cc.arguments()) {
             Parse(child.get(), context);
         }
@@ -210,11 +234,32 @@ static void Parse(const SkSL::Expression* expression, Context* context) {
     case SkSL::ExpressionKind::kConstructorMatrixResize:
     case SkSL::ExpressionKind::kConstructorScalarCast:
     case SkSL::ExpressionKind::kConstructorSplat:
-    case SkSL::ExpressionKind::kConstructorStruct:
+    case SkSL::ExpressionKind::kConstructorStruct: {
+        const auto& ac = expression->as<SkSL::AnyConstructor>();
+        PushReference(&ac.type(), ac.position(), context);
+        for (const auto& child : ac.argumentSpan()) {
+            Parse(child.get(), context);
+        }
+        break;
+    }
     case SkSL::ExpressionKind::kEmpty:
-    case SkSL::ExpressionKind::kFieldAccess:
+        // None
+        break;
+    case SkSL::ExpressionKind::kFieldAccess: {
+        const auto& fa = expression->as<SkSL::FieldAccess>();
+
+        Parse(fa.base().get(), context);
+
+        auto start = fa.base()->position().endOffset();
+        auto end = fa.position().endOffset();
+        if (start < end) {
+            auto position = SkSL::Position::Range(start, end);
+            PushReference(&fa.base()->type().fields()[fa.fieldIndex()], position, context);
+        }
+        break;
+    }
     case SkSL::ExpressionKind::kFunctionReference:
-        // TODO:
+        // None
         break;
     case SkSL::ExpressionKind::kFunctionCall: {
         const auto& fc = expression->as<SkSL::FunctionCall>();
@@ -224,19 +269,75 @@ static void Parse(const SkSL::Expression* expression, Context* context) {
         }
         break;
     }
-    case SkSL::ExpressionKind::kIndex:
+    case SkSL::ExpressionKind::kIndex: {
+        const auto& ie = expression->as<SkSL::IndexExpression>();
+        Parse(ie.base().get(), context);
+        Parse(ie.index().get(), context);
+        break;
+    }
     case SkSL::ExpressionKind::kLiteral:
     case SkSL::ExpressionKind::kMethodReference:
     case SkSL::ExpressionKind::kPoison:
-    case SkSL::ExpressionKind::kPostfix:
-    case SkSL::ExpressionKind::kPrefix:
-    case SkSL::ExpressionKind::kSetting:
-    case SkSL::ExpressionKind::kSwizzle:
-    case SkSL::ExpressionKind::kTernary:
-    case SkSL::ExpressionKind::kTypeReference:
-    case SkSL::ExpressionKind::kVariableReference:
-        // TODO:
+        // None
         break;
+    case SkSL::ExpressionKind::kPostfix: {
+        const auto& pe = expression->as<SkSL::PostfixExpression>();
+        Parse(pe.operand().get(), context);
+        break;
+    }
+    case SkSL::ExpressionKind::kPrefix: {
+        const auto& pe = expression->as<SkSL::PrefixExpression>();
+        Parse(pe.operand().get(), context);
+        break;
+    }
+    case SkSL::ExpressionKind::kSetting: {
+        const auto& s = expression->as<SkSL::Setting>();
+
+        auto range = FindIdentifier(context->content, "sk_Caps", s.position());
+        if (range.IsValid()) {
+            Push(context, range, TokenType::kVariable, TokenModifier::kDefaultLibrary);
+        }
+
+        range = FindIdentifier(context->content, s.name(), s.position());
+        if (range.IsValid()) {
+            Push(context, range, TokenType::kProperty, 0);
+        }
+        break;
+    }
+    case SkSL::ExpressionKind::kSwizzle: {
+        const auto& s = expression->as<SkSL::Swizzle>();
+
+        Parse(s.base().get(), context);
+
+        auto start = s.base()->position().endOffset();
+        auto end = s.position().endOffset();
+        if (start < end) {
+            auto position = SkSL::Position::Range(start, end);
+            auto components = SkSL::Swizzle::MaskString(s.components());
+            auto range = FindIdentifier(context->content, components, position);
+            if (range.IsValid()) {
+                Push(context, range, TokenType::kProperty, 0);
+            }
+        }
+        break;
+    }
+    case SkSL::ExpressionKind::kTernary: {
+        const auto& te = expression->as<SkSL::TernaryExpression>();
+        Parse(te.test().get(), context);
+        Parse(te.ifTrue().get(), context);
+        Parse(te.ifFalse().get(), context);
+        break;
+    }
+    case SkSL::ExpressionKind::kTypeReference: {
+        const auto& tr = expression->as<SkSL::TypeReference>();
+        PushReference(&tr.type(), tr.position(), context);
+        break;
+    }
+    case SkSL::ExpressionKind::kVariableReference: {
+        const auto& vr = expression->as<SkSL::VariableReference>();
+        PushReference(vr.variable(), vr.position(), context);
+        break;
+    }
     }
 }
 
