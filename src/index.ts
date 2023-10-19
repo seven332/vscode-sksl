@@ -28,7 +28,6 @@ export async function activate(context: ExtensionContext) {
             debug: {
                 module,
                 transport,
-                runtime: 'node',
                 options: { execArgv: ['--nolazy', '--inspect=6009'] },
             },
         },
