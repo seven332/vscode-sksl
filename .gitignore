@@ -7,8 +7,8 @@ compile_commands.json
 *.swp
 *.vsix
 .DS_Store
-wasi/download
-wasi/build
-wasi/build_test
-wasi/.clangd
+wasm/download
+wasm/build
+wasm/build_test
+wasm/.clangd
 .vscode/settings.json

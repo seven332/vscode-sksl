@@ -17,7 +17,7 @@ export default <RollupOptions>{
         // this comment prevents prettier from formatting this array into a single line
         resolve(),
         commonjs(),
-        typescript({ module: 'esnext', exclude: 'wasi/**/*.ts' }),
+        typescript({ module: 'esnext', exclude: 'wasm/**/*.ts' }),
         production && terser(),
     ].filter(Boolean),
     external: ['vscode'],

@@ -1,6 +1,6 @@
-[submodule "wasi/third_party/externals/skia"]
-	path = wasi/third_party/externals/skia
+[submodule "wasm/third_party/externals/skia"]
+	path = wasm/third_party/externals/skia
 	url = https://github.com/google/skia.git
-[submodule "wasi/third_party/externals/googletest"]
-	path = wasi/third_party/externals/googletest
+[submodule "wasm/third_party/externals/googletest"]
+	path = wasm/third_party/externals/googletest
 	url = https://github.com/google/googletest.git

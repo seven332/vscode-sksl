@@ -37,7 +37,7 @@ function bundle(debug: boolean) {
     exec(
         npx('rollup'),
         '--config',
-        '--configPlugin=typescript={module:"esnext",exclude:"wasi/**/*.ts"}',
+        '--configPlugin=typescript={module:"esnext",exclude:"wasm/**/*.ts"}',
         `--environment=NODE_ENV:${environment}`,
     )
 }
@@ -50,19 +50,19 @@ function run(target: string) {
             bundle(false)
             chdir('script')
             exec(npx('ts-node'), 'syntax.ts', '../build')
-            chdir('wasi')
+            chdir('wasm')
             exec('sh', 'build.sh')
             break
         case 'test':
             chdir('.')
             exec(npx('jest'))
-            chdir('wasi')
+            chdir('wasm')
             exec('sh', 'test.sh')
             break
         case 'format':
             exec(npx('prettier'), '--write', '.')
-            exec('clang-format', '-i', ...list('wasi/src', /\.(cpp|h)$/))
-            exec('clang-format', '-i', ...list('wasi/src/action', /\.(cpp|h)$/))
+            exec('clang-format', '-i', ...list('wasm/src', /\.(cpp|h)$/))
+            exec('clang-format', '-i', ...list('wasm/src/action', /\.(cpp|h)$/))
             break
         case 'package':
             chdir('.')
