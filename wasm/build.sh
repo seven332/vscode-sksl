@@ -8,23 +8,23 @@ BUILD_DIR=${SOURCE_DIR}/build
 
 # download cmake
 
-if [ `uname` == "Linux" ] && [ `uname -m` == "x86_64" ]; then
-    CMAKE_TAR_URL="https://github.com/Kitware/CMake/releases/download/v3.27.7/cmake-3.27.7-linux-x86_64.tar.gz"
-    CMAKE_TAR_FILE="${DOWNLOAD_DIR}/cmake-3.27.7-linux-x86_64.tar.gz"
-    CMAKE_DIR="${DOWNLOAD_DIR}/cmake-3.27.7-linux-x86_64"
-    CMAKE_FILE="${CMAKE_DIR}/bin/cmake"
+if [ $(uname) == "Linux" ] && [ $(uname -m) == "x86_64" ]; then
+  CMAKE_TAR_URL="https://github.com/Kitware/CMake/releases/download/v3.27.7/cmake-3.27.7-linux-x86_64.tar.gz"
+  CMAKE_TAR_FILE="${DOWNLOAD_DIR}/cmake-3.27.7-linux-x86_64.tar.gz"
+  CMAKE_DIR="${DOWNLOAD_DIR}/cmake-3.27.7-linux-x86_64"
+  CMAKE_FILE="${CMAKE_DIR}/bin/cmake"
 
-    mkdir -p ${DOWNLOAD_DIR}
+  mkdir -p ${DOWNLOAD_DIR}
 
-    if [ ! -f ${CMAKE_TAR_FILE} ]; then
-        curl ${CMAKE_TAR_URL} -L --output ${CMAKE_TAR_FILE}
-    fi
+  if [ ! -f ${CMAKE_TAR_FILE} ]; then
+    curl ${CMAKE_TAR_URL} -L --output ${CMAKE_TAR_FILE}
+  fi
 
-    if [ ! -d ${CMAKE_DIR} ]; then
-        tar xf ${CMAKE_TAR_FILE} -C ${DOWNLOAD_DIR}
-    fi
+  if [ ! -d ${CMAKE_DIR} ]; then
+    tar xf ${CMAKE_TAR_FILE} -C ${DOWNLOAD_DIR}
+  fi
 else
-    CMAKE_FILE="cmake"
+  CMAKE_FILE="cmake"
 fi
 
 # init emsdk
@@ -44,13 +44,3 @@ EOT
 
 ${EMCMAKE_FILE} ${CMAKE_FILE} -DCMAKE_BUILD_TYPE=Release -G Ninja -S ${SOURCE_DIR} -B ${BUILD_DIR}
 ${CMAKE_FILE} --build ${BUILD_DIR} --target sksl-wasm
-
-# clangd
-
-cat <<EOT >${SOURCE_DIR}/.clangd
-CompileFlags:
-  Add: [--sysroot, ${EMSDK_DIR}/upstream/emscripten/cache/sysroot, -isystem, ${EMSDK_DIR}/upstream/emscripten/cache/sysroot/include/c++/v1]
-  CompilationDatabase: "${BUILD_DIR}"
-Diagnostics:
-  UnusedIncludes: Strict
-EOT

@@ -37,8 +37,6 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <iostream>
-#include <ostream>
 #include <string_view>
 #include <unordered_set>
 
@@ -235,7 +233,7 @@ static void Parse(const SkSL::Expression* expression, Context* context) {
     case SkSL::ExpressionKind::kConstructorScalarCast:
     case SkSL::ExpressionKind::kConstructorSplat:
     case SkSL::ExpressionKind::kConstructorStruct: {
-        const auto& ac = expression->as<SkSL::AnyConstructor>();
+        const auto& ac = *reinterpret_cast<const SkSL::AnyConstructor*>(expression);
         PushReference(&ac.type(), ac.position(), context);
         for (const auto& child : ac.argumentSpan()) {
             Parse(child.get(), context);
