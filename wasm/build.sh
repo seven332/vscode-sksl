@@ -5,30 +5,51 @@ set -eu
 SOURCE_DIR=$(realpath $(dirname "$0"))
 DOWNLOAD_DIR=${SOURCE_DIR}/download
 BUILD_DIR=${SOURCE_DIR}/build
-SDK_FILE=${DOWNLOAD_DIR}/wasi-sdk-20.0-linux.tar.gz
-SDK_DIR=${DOWNLOAD_DIR}/wasi-sdk-20.0
-SDK_URL="https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-20/wasi-sdk-20.0-linux.tar.gz"
 
-mkdir -p ${DOWNLOAD_DIR}
+# download cmake
 
-if [ ! -f ${SDK_FILE} ]; then
-    curl ${SDK_URL} -L --output ${SDK_FILE}
+if [ `uname` == "Linux" ] && [ `uname -m` == "x86_64" ]; then
+    CMAKE_TAR_URL="https://github.com/Kitware/CMake/releases/download/v3.27.7/cmake-3.27.7-linux-x86_64.tar.gz"
+    CMAKE_TAR_FILE="${DOWNLOAD_DIR}/cmake-3.27.7-linux-x86_64.tar.gz"
+    CMAKE_DIR="${DOWNLOAD_DIR}/cmake-3.27.7-linux-x86_64"
+    CMAKE_FILE="${CMAKE_DIR}/bin/cmake"
+
+    mkdir -p ${DOWNLOAD_DIR}
+
+    if [ ! -f ${CMAKE_TAR_FILE} ]; then
+        curl ${CMAKE_TAR_URL} -L --output ${CMAKE_TAR_FILE}
+    fi
+
+    if [ ! -d ${CMAKE_DIR} ]; then
+        tar xf ${CMAKE_TAR_FILE} -C ${DOWNLOAD_DIR}
+    fi
+else
+    CMAKE_FILE="cmake"
 fi
 
-if [ ! -d ${SDK_DIR} ]; then
-    tar xf ${SDK_FILE} -C ${DOWNLOAD_DIR}
-fi
+# init emsdk
 
-cmake -DCMAKE_BUILD_TYPE=Release -G Ninja -S ${SOURCE_DIR} -B ${BUILD_DIR} \
-    -DWASI_SDK_PREFIX=${SDK_DIR} -DCMAKE_TOOLCHAIN_FILE=${SDK_DIR}/share/cmake/wasi-sdk.cmake
+EMSDK_DIR="${SOURCE_DIR}/third_party/externals/emsdk"
+EMCMAKE_FILE="${EMSDK_DIR}/upstream/emscripten/emcmake"
 
-cmake --build ${BUILD_DIR} --target sksl-wasi
+"${EMSDK_DIR}/emsdk" install 3.1.47
 
-cp ${BUILD_DIR}/src/sksl-wasi ${SOURCE_DIR}/../build
+cat <<EOT >"${EMSDK_DIR}/upstream/emscripten/.emscripten"
+LLVM_ROOT = '${EMSDK_DIR}/upstream/bin'
+BINARYEN_ROOT = '${EMSDK_DIR}/upstream'
+NODE_JS = '${EMSDK_DIR}/node/16.20.0_64bit/bin/node'
+EOT
+
+# build
+
+${EMCMAKE_FILE} ${CMAKE_FILE} -DCMAKE_BUILD_TYPE=Release -G Ninja -S ${SOURCE_DIR} -B ${BUILD_DIR}
+${CMAKE_FILE} --build ${BUILD_DIR} --target sksl-wasm
+
+# clangd
 
 cat <<EOT >${SOURCE_DIR}/.clangd
 CompileFlags:
-  Add: [--sysroot, ${SDK_DIR}/share/wasi-sysroot]
+  Add: [--sysroot, ${EMSDK_DIR}/upstream/emscripten/cache/sysroot, -isystem, ${EMSDK_DIR}/upstream/emscripten/cache/sysroot/include/c++/v1]
   CompilationDatabase: "${BUILD_DIR}"
 Diagnostics:
   UnusedIncludes: Strict

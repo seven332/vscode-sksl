@@ -47,17 +47,20 @@ function run(target: string) {
         case 'build':
             chdir('.')
             exec('rm', '-rf', 'build')
+            chdir('wasm')
+            exec('bash', 'build.sh')
+            exec('cp', 'build/src/sksl-wasm.js', '../src')
             bundle(false)
             chdir('script')
             exec(npx('ts-node'), 'syntax.ts', '../build')
             chdir('wasm')
-            exec('sh', 'build.sh')
+            exec('cp', 'build/src/sksl-wasm.wasm', '../build')
             break
         case 'test':
             chdir('.')
             exec(npx('jest'))
             chdir('wasm')
-            exec('sh', 'test.sh')
+            exec('bash', 'test.sh')
             break
         case 'format':
             exec(npx('prettier'), '--write', '.')

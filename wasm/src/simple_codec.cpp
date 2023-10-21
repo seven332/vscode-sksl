@@ -27,26 +27,26 @@ void Write(std::vector<std::byte>* bytes, const std::string& value) {
 
 #pragma mark - Read
 
-static void CheckSize(const std::vector<std::byte>& bytes, std::size_t at_least) {
+static void CheckSize(std::span<std::byte> bytes, std::size_t at_least) {
     if (bytes.size() < at_least) {
         std::cerr << "CheckSize failed: " << bytes.size() << " -> " << at_least << std::endl;
         std::abort();
     }
 }
 
-std::size_t Read(const std::vector<std::byte>& bytes, std::size_t offset, bool* value) {
+std::size_t Read(std::span<std::byte> bytes, std::size_t offset, bool* value) {
     CheckSize(bytes, offset + 1);
     *value = *(bytes.data() + offset) != static_cast<std::byte>(0);
     return 1;
 }
 
-std::size_t Read(const std::vector<std::byte>& bytes, std::size_t offset, int* value) {
+std::size_t Read(std::span<std::byte> bytes, std::size_t offset, int* value) {
     CheckSize(bytes, offset + 4);
     std::memcpy(value, bytes.data() + offset, 4);
     return 4;
 }
 
-std::size_t Read(const std::vector<std::byte>& bytes, std::size_t offset, std::string* value) {
+std::size_t Read(std::span<std::byte> bytes, std::size_t offset, std::string* value) {
     int size = 0;
     Read(bytes, offset, &size);
 

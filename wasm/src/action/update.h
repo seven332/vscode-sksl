@@ -11,7 +11,7 @@ struct UpdateParams {
     std::string content;
     std::string kind;
 
-    friend std::size_t Read(const std::vector<std::byte>& bytes, std::size_t offset, UpdateParams* value) {
+    friend std::size_t Read(std::span<std::byte> bytes, std::size_t offset, UpdateParams* value) {
         std::size_t read = 0;
         read += Read(bytes, offset + read, &value->file);
         read += Read(bytes, offset + read, &value->content);

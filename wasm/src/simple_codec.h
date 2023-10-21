@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -20,12 +21,12 @@ void Write(std::vector<std::byte>* bytes, const std::vector<T>& value) {
 
 #pragma mark - Read
 
-std::size_t Read(const std::vector<std::byte>& bytes, std::size_t offset, bool* value);
-std::size_t Read(const std::vector<std::byte>& bytes, std::size_t offset, int* value);
-std::size_t Read(const std::vector<std::byte>& bytes, std::size_t offset, std::string* value);
+std::size_t Read(std::span<std::byte> bytes, std::size_t offset, bool* value);
+std::size_t Read(std::span<std::byte> bytes, std::size_t offset, int* value);
+std::size_t Read(std::span<std::byte> bytes, std::size_t offset, std::string* value);
 
 template<class T>
-std::size_t Read(const std::vector<std::byte>& bytes, std::size_t offset, std::vector<T>* value) {
+std::size_t Read(std::span<std::byte> bytes, std::size_t offset, std::vector<T>* value) {
     std::size_t read = 0;
     int size = 0;
     read += Read(bytes, offset + read, &size);
