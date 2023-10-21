@@ -48,7 +48,7 @@ static SkSL::ProgramKind ToProgramKind(const std::string& kind) {
     case Hash("meshvert"):
         return SkSL::ProgramKind::kMeshVertex;
     default:
-        std::cerr << "Abort: invalid program kind: " << kind << std::endl;
+        std::cerr << "Abort: invalid program kind: " << kind << '\n';
         std::abort();
     }
 }
@@ -70,9 +70,9 @@ static std::unique_ptr<SkSL::Program> CompileProgram(
     SkSL::Parser parser {compiler, settings, kind, std::move(module_source)};
     auto program = parser.program();
     if (error_reporter && (!error_reporter->GetErrors().empty() || !program)) {
-        std::cerr << "Abort: failed to complied " << module_name << std::endl;
+        std::cerr << "Abort: failed to complied " << module_name << '\n';
         for (const auto& error : error_reporter->GetErrors()) {
-            std::cerr << error.message << std::endl;
+            std::cerr << error.message << '\n';
         }
         std::abort();
     }

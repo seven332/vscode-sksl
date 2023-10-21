@@ -1,8 +1,6 @@
 #include <cstddef>
-#include <cstdint>
 #include <cstdlib>
 #include <iostream>
-#include <istream>
 #include <span>
 #include <string>
 #include <vector>
@@ -36,18 +34,18 @@ std::size_t GetResultSize() {
     return result_bytes.size();
 }
 
-#define ACTION(Type, Name)                                 \
-    void Type() {                                          \
-        Type##Params params;                               \
-        Read(params_bytes, 0, &params);                    \
-                                                           \
-        auto file = params.file;                           \
-        std::cout << Name " start: " << file << std::endl; \
-        auto result = Type(&modules, std::move(params));   \
-        std::cout << Name " end:   " << file << std::endl; \
-                                                           \
-        result_bytes.clear();                              \
-        Write(&result_bytes, result);                      \
+#define ACTION(Type, Name)                               \
+    void Type() {                                        \
+        Type##Params params;                             \
+        Read(params_bytes, 0, &params);                  \
+                                                         \
+        auto file = params.file;                         \
+        std::cout << Name " start: " << file << '\n';    \
+        auto result = Type(&modules, std::move(params)); \
+        std::cout << Name " end:   " << file << '\n';    \
+                                                         \
+        result_bytes.clear();                            \
+        Write(&result_bytes, result);                    \
     }
 
 ACTION(Update, "update")

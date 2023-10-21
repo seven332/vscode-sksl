@@ -29,7 +29,7 @@ void Write(std::vector<std::byte>* bytes, const std::string& value) {
 
 static void CheckSize(std::span<std::byte> bytes, std::size_t at_least) {
     if (bytes.size() < at_least) {
-        std::cerr << "CheckSize failed: " << bytes.size() << " -> " << at_least << std::endl;
+        std::cerr << "CheckSize failed: " << bytes.size() << " -> " << at_least << '\n';
         std::abort();
     }
 }

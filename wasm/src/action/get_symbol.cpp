@@ -35,7 +35,7 @@ static std::vector<SkSLSymbol> ToFieldSymbols(const SkSL::Type& type, std::strin
             .detail = field.fType->description(),
             .kind = "field",
             .range = field.fPosition,
-            .selectionRange = Find(content, field.fPosition, field.fName),
+            .selection_range = Find(content, field.fPosition, field.fName),
         });
     }
     return children;
@@ -54,7 +54,7 @@ static void Parse(std::vector<SkSLSymbol>* symbols, const SkSL::FunctionDefiniti
         .detail = element.declaration().description(),
         .kind = "function",
         .range = range,
-        .selectionRange = selection_range,
+        .selection_range = selection_range,
     });
 }
 
@@ -70,7 +70,7 @@ static void Parse(std::vector<SkSLSymbol>* symbols, const SkSL::FunctionPrototyp
         .detail = element.declaration().description(),
         .kind = "function",
         .range = range,
-        .selectionRange = selection_range,
+        .selection_range = selection_range,
     });
 }
 
@@ -88,7 +88,7 @@ Parse(std::vector<SkSLSymbol>* symbols, const SkSL::GlobalVarDeclaration& elemen
         .detail = element.varDeclaration().var()->type().description(),
         .kind = "variable",
         .range = range,
-        .selectionRange = selection_range,
+        .selection_range = selection_range,
     });
 }
 
@@ -104,7 +104,7 @@ static void Parse(std::vector<SkSLSymbol>* symbols, const SkSL::InterfaceBlock& 
             .detail = "interface",
             .kind = "interface",
             .range = range,
-            .selectionRange = selection_range,
+            .selection_range = selection_range,
             .children = ToFieldSymbols(element.var()->type(), content),
         });
     }
@@ -121,7 +121,7 @@ static void Parse(std::vector<SkSLSymbol>* symbols, const SkSL::InterfaceBlock& 
                 .detail = var->type().description(),
                 .kind = "variable",
                 .range = range,
-                .selectionRange = selection_range,
+                .selection_range = selection_range,
             });
         }
     }
@@ -139,7 +139,7 @@ static void Parse(std::vector<SkSLSymbol>* symbols, const SkSL::StructDefinition
         .detail = "struct",
         .kind = "struct",
         .range = range,
-        .selectionRange = selection_range,
+        .selection_range = selection_range,
         .children = ToFieldSymbols(element.type(), content),
     });
 }
@@ -156,7 +156,7 @@ GetSymbolResult GetSymbol(Modules* modules, const GetSymbolParams& params) {
         switch (element->kind()) {
         case SkSL::ProgramElementKind::kExtension: {
             auto& extension = element->as<SkSL::Extension>();
-            std::cerr << "TODO: GetSymbol kExtension " << std::endl;
+            std::cerr << "TODO: GetSymbol kExtension " << '\n';
             break;
         }
         case SkSL::ProgramElementKind::kFunction: {
@@ -181,7 +181,7 @@ GetSymbolResult GetSymbol(Modules* modules, const GetSymbolParams& params) {
         }
         case SkSL::ProgramElementKind::kModifiers: {
             auto& modifiers = element->as<SkSL::ModifiersDeclaration>();
-            std::cerr << "TODO: GetSymbol kModifiers " << std::endl;
+            std::cerr << "TODO: GetSymbol kModifiers " << '\n';
             break;
         }
         case SkSL::ProgramElementKind::kStructDefinition: {

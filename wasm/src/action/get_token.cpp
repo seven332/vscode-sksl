@@ -90,8 +90,8 @@ static SkSLRange FindIdentifier(std::string_view content, std::string_view text,
 static void Push(Context* context, const SkSLRange& range, TokenType token_type, std::uint32_t token_modifiers) {
     context->tokens->push_back(SkSLToken {
         .range = range,
-        .tokenType = static_cast<std::uint32_t>(token_type),
-        .tokenModifiers = token_modifiers,
+        .token_type = static_cast<std::uint32_t>(token_type),
+        .token_modifiers = token_modifiers,
     });
 }
 

@@ -1,7 +1,8 @@
 #include "lexer.h"
 
+#include <src/sksl/SkSLLexer.h>
+
 #include "data.h"
-#include "src/sksl/SkSLLexer.h"
 
 using TokenKind = SkSL::Token::Kind;
 
