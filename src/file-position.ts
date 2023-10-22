@@ -1,4 +1,5 @@
 import * as ls from 'vscode-languageserver/node'
+import { findLastLE } from './binary-search'
 
 export class FilePosition {
     public constructor(content: string) {
@@ -32,7 +33,7 @@ export class FilePosition {
     }
 
     public getPosition(offset: number): ls.Position {
-        const index = this.findLastIndex((position) => position <= offset)
+        const index = findLastLE(this.positions, offset, (value, element) => value < element)
         if (index == -1) {
             return ls.Position.create(0, offset)
         }
