@@ -21,7 +21,7 @@ target_link_options(sksl-wasm PRIVATE
     -sENVIRONMENT=node
     -sMODULARIZE
     -sEXPORTED_RUNTIME_METHODS=ccall
-    -sEXPORTED_FUNCTIONS=_SetParamsSize,_GetParamsPtr,_GetResultPtr,_GetResultSize,_Update,_Close,_GetSymbol,_Format,_GetToken
+    -sEXPORTED_FUNCTIONS=_SetParamsSize,_GetParamsPtr,_GetResultPtr,_GetResultSize,_Update,_Close,_GetSymbol,_Format,_GetToken,_GetTokenRange
     -sALLOW_MEMORY_GROWTH=1
     -sINITIAL_MEMORY=32MB
     -sDISABLE_EXCEPTION_CATCHING=1

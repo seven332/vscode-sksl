@@ -27,3 +27,19 @@ struct GetTokenResult {
 };
 
 GetTokenResult GetToken(Modules* modules, const GetTokenParams& params);
+
+struct GetTokenRangeParams {
+    std::string file;
+    SkSLRange range;
+
+    friend std::size_t Read(std::span<std::byte> bytes, std::size_t offset, GetTokenRangeParams* value) {
+        std::size_t read = 0;
+        read += Read(bytes, offset + read, &value->file);
+        read += Read(bytes, offset + read, &value->range);
+        return read;
+    }
+};
+
+using GetTokenRangeResult = GetTokenResult;
+
+GetTokenRangeResult GetTokenRange(Modules* modules, const GetTokenRangeParams& params);

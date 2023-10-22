@@ -10,6 +10,7 @@ export interface SkSLWasm extends EmscriptenModule {
     _GetSymbol(): void
     _Format(): void
     _GetToken(): void
+    _GetTokenRange(): void
 }
 
 export default function createSkSLWasm(moduleOverrides?: Partial<EmscriptenModule>): Promise<SkSLWasm>

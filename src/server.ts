@@ -28,7 +28,7 @@ connection.onInitialize(async (params) => {
                     ],
                     tokenModifiers: ['readonly', 'defaultLibrary'],
                 },
-                range: false,
+                range: true,
                 full: true,
             },
         },
@@ -59,6 +59,10 @@ connection.onDocumentFormatting((params) => {
 
 connection.onRequest(ls.SemanticTokensRequest.method, (params: ls.SemanticTokensParams) => {
     return server?.getToken(params.textDocument.uri) ?? { data: [] }
+})
+
+connection.onRequest(ls.SemanticTokensRangeRequest.method, (params: ls.SemanticTokensRangeParams) => {
+    return server?.getTokenRange(params.textDocument.uri, params.range) ?? { data: [] }
 })
 
 documents.listen(connection)

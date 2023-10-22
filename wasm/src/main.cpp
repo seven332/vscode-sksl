@@ -53,6 +53,7 @@ ACTION(Close, "close")
 ACTION(GetSymbol, "get_symbol")
 ACTION(Format, "format")
 ACTION(GetToken, "get_token")
+ACTION(GetTokenRange, "get_token_range")
 
 #undef ACTION
 }

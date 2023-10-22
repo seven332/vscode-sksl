@@ -22,6 +22,10 @@ struct SkSLRange {
         return start != kMax && end != kMax;
     }
 
+    [[nodiscard]] bool Intersects(const SkSLRange& other) const {
+        return std::max(start, other.start) < std::min(end, other.end);
+    }
+
     void Offset(int offset) {
         start += offset;
         end += offset;
@@ -30,6 +34,13 @@ struct SkSLRange {
     void Join(const SkSLRange& other) {
         start = std::min(start, other.start);
         end = std::max(end, other.end);
+    }
+
+    friend std::size_t Read(std::span<std::byte> bytes, std::size_t offset, SkSLRange* value) {
+        std::size_t read = 0;
+        read += Read(bytes, offset + read, reinterpret_cast<int*>(&value->start));
+        read += Read(bytes, offset + read, reinterpret_cast<int*>(&value->end));
+        return read;
     }
 
     friend void Write(std::vector<std::byte>* bytes, const SkSLRange& value) {

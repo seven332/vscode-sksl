@@ -182,6 +182,36 @@ export class SkSLServer {
         return builder.build()
     }
 
+    public getTokenRange(uri: string, range: ls.Range): ls.SemanticTokens {
+        const builder = new ls.SemanticTokensBuilder()
+
+        const file = URI.parse(uri).fsPath
+        const filePosition = this.filePositions.get(file)
+        if (!filePosition) {
+            return builder.build()
+        }
+
+        // Call wasm
+        this.setParams<GetTokenRangeParams>({ file, range: toSkSLRange(filePosition, range) })
+        this.wasm._GetTokenRange()
+        const result = this.getResult<GetTokenRangeResult>(dummyGetTokenRangeResult)
+
+        for (const token of result.tokens) {
+            const range = toRange(filePosition, token.range)
+            if (range.start.line == range.end.line) {
+                builder.push(
+                    range.start.line,
+                    range.start.character,
+                    range.end.character - range.start.character,
+                    token.tokenType,
+                    token.tokenModifiers,
+                )
+            }
+        }
+
+        return builder.build()
+    }
+
     private files = new Map<string, Set<string>>()
     private filePositions = new Map<string, FilePosition>()
 
@@ -319,6 +349,19 @@ const dummyGetTokenResult: GetTokenResult = {
     tokens: [dummySkSLToken],
 }
 
+interface GetTokenRangeParams {
+    file: string
+    range: SkSLRange
+}
+
+type GetTokenRangeResult = GetTokenResult
+
+const dummyGetTokenRangeResult = dummyGetTokenResult
+
 function toRange(filePosition: FilePosition, range: SkSLRange): ls.Range {
     return ls.Range.create(filePosition.getPosition(range.start), filePosition.getPosition(range.end))
+}
+
+function toSkSLRange(filePosition: FilePosition, range: ls.Range): SkSLRange {
+    return { start: filePosition.getOffset(range.start), end: filePosition.getOffset(range.end) }
 }

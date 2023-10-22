@@ -6,7 +6,7 @@ export class FilePosition {
         if (content.length <= 0) {
             return
         }
-        this.positions.push(0)
+        this.lineOffsets.push(0)
 
         let index = 0
         let prev = ' '
@@ -14,12 +14,12 @@ export class FilePosition {
             switch (c) {
                 case '\n':
                     if (prev == '\n') {
-                        this.positions.push(index)
+                        this.lineOffsets.push(index)
                     }
                     break
                 default:
                     if (prev == '\r' || prev == '\n') {
-                        this.positions.push(index)
+                        this.lineOffsets.push(index)
                     }
                     break
             }
@@ -29,28 +29,22 @@ export class FilePosition {
     }
 
     public getLines(): number {
-        return this.positions.length
+        return this.lineOffsets.length
     }
 
     public getPosition(offset: number): ls.Position {
-        const index = findLastLE(this.positions, offset, (value, element) => value < element)
+        const index = findLastLE(this.lineOffsets, offset, (value, element) => value < element)
         if (index == -1) {
             return ls.Position.create(0, offset)
         }
-        const position = this.positions[index]
+        const position = this.lineOffsets[index]
         return ls.Position.create(index, offset - position)
     }
 
-    private positions = new Array<number>()
-
-    private findLastIndex(predicate: (position: number) => boolean): number {
-        let i = this.positions.length - 1
-        while (i >= 0) {
-            if (predicate(this.positions[i])) {
-                return i
-            }
-            i -= 1
-        }
-        return -1
+    public getOffset(position: ls.Position): number {
+        const line = Math.min(position.line, this.lineOffsets.length - 1)
+        return this.lineOffsets[line] + position.character
     }
+
+    private lineOffsets = new Array<number>()
 }
