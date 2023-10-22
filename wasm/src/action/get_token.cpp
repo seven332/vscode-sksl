@@ -20,8 +20,13 @@ enum TokenModifier : std::uint32_t {
     kDefaultLibrary = 2,
 };
 
-template<class>
-inline constexpr bool kAlwaysFalseV = false;
+template<class... Ts>
+struct Overloaded : Ts... {
+    using Ts::operator()...;
+};
+
+template<class... Ts>
+Overloaded(Ts...) -> Overloaded<Ts...>;
 
 GetTokenResult GetToken(Modules* modules, const GetTokenParams& params) {
     GetTokenResult result;
@@ -34,19 +39,21 @@ GetTokenResult GetToken(Modules* modules, const GetTokenParams& params) {
     for (const auto& token : iter->second.tokens) {
         TokenType token_type = TokenType::kClass;
         std::uint32_t token_modifiers = 0;
-        bool should_continue = false;
+        bool skip = false;
+
         std::visit(
-            [&token, &token_type, &token_modifiers, &should_continue](auto&& value) {
-                using T = std::decay_t<decltype(value)>;
-                if constexpr (std::is_same_v<T, const SkSL::Extension*>) {
+            Overloaded {
+                [&token_type, &token_modifiers](const SkSL::Extension* /*value*/) {
                     token_type = TokenType::kDecorator;
                     token_modifiers |= TokenModifier::kDefaultLibrary;
-                } else if constexpr (std::is_same_v<T, const SkSL::FunctionDeclaration*>) {
+                },
+                [&token_type, &token_modifiers](const SkSL::FunctionDeclaration* value) {
                     token_type = TokenType::kFunction;
                     if (value->isBuiltin()) {
                         token_modifiers |= TokenModifier::kDefaultLibrary;
                     }
-                } else if constexpr (std::is_same_v<T, const SkSL::Variable*>) {
+                },
+                [&token_type, &token_modifiers](const SkSL::Variable* value) {
                     if (value->storage() == SkSL::VariableStorage::kParameter) {
                         token_type = TokenType::kParameter;
                     } else {
@@ -58,37 +65,33 @@ GetTokenResult GetToken(Modules* modules, const GetTokenParams& params) {
                     if (value->isBuiltin()) {
                         token_modifiers |= TokenModifier::kDefaultLibrary;
                     }
-                } else if constexpr (std::is_same_v<T, const SkSL::Type*>) {
+                },
+                [&token_type, &token_modifiers, &skip](const SkSL::Type* value) {
                     if (value->isStruct()) {
                         token_type = TokenType::kStruct;
                         if (value->isInBuiltinTypes()) {
                             token_modifiers |= TokenModifier::kDefaultLibrary;
                         }
                     } else {
-                        // TODO:
-                        should_continue = true;
+                        // It's keyword
+                        skip = true;
                     }
-                } else if constexpr (std::is_same_v<T, const SkSL::Field*>) {
-                    token_type = TokenType::kProperty;
-                } else if constexpr (std::is_same_v<T, const SkSL::FieldSymbol*>) {
-                    token_type = TokenType::kProperty;
-                } else if constexpr (std::is_same_v<T, const SkSL::Literal*>) {
+                },
+                [&token_type](const SkSL::Field* /*value*/) { token_type = TokenType::kProperty; },
+                [&token_type](const SkSL::FieldSymbol* /*value*/) { token_type = TokenType::kProperty; },
+                [](const SkSL::Literal* value) {
                     // TODO:
-                    should_continue = true;
-                } else if constexpr (std::is_same_v<T, const SkSL::Setting*>) {
-                    token_type = TokenType::kProperty;
-                } else if constexpr (std::is_same_v<T, const SkSL::Swizzle*>) {
-                    token_type = TokenType::kProperty;
-                } else if constexpr (std::is_same_v<T, const SkSL::ChildCall*>) {
+                },
+                [&token_type](const SkSL::Setting* /*value*/) { token_type = TokenType::kProperty; },
+                [&token_type](const SkSL::Swizzle* /*value*/) { token_type = TokenType::kProperty; },
+                [&token_type, &token_modifiers](const SkSL::ChildCall* /*value*/) {
                     token_type = TokenType::kFunction;
                     token_modifiers |= TokenModifier::kDefaultLibrary;
-                } else {
-                    static_assert(kAlwaysFalseV<T>, "non-exhaustive visitor!");
-                }
+                },
             },
             token.value
         );
-        if (should_continue) {
+        if (!skip) {
             continue;
         }
         result.tokens.push_back(SkSLToken {
