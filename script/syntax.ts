@@ -296,14 +296,6 @@ const grammar = {
             end: '\\*\\/',
         },
         {
-            name: 'constant.numeric.sksl',
-            match: '\\b[0-9]*\\.[0-9]+([eE][+-]?[0-9]+)?|[0-9]+\\.[0-9]*([eE][+-]?[0-9]+)?|[0-9]+([eE][+-]?[0-9]+)\\b',
-        },
-        {
-            name: 'constant.numeric.sksl',
-            match: '\\b([1-9][0-9]*|0[0-7]*|0[xX][0-9a-fA-F]+)[uU]?\\b',
-        },
-        {
             name: 'constant.language.sksl',
             match: `\\b(${constant.language.join('|')})\\b`,
         },

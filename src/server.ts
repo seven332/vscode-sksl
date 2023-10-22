@@ -24,6 +24,7 @@ connection.onInitialize(async (params) => {
                         'property',
                         'decorator',
                         'function',
+                        'number',
                     ],
                     tokenModifiers: ['readonly', 'defaultLibrary'],
                 },

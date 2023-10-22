@@ -13,6 +13,7 @@ enum class TokenType : std::uint32_t {
     kProperty,
     kDecorator,
     kFunction,
+    kNumber,
 };
 
 enum TokenModifier : std::uint32_t {
@@ -28,7 +29,7 @@ struct Overloaded : Ts... {
 template<class... Ts>
 Overloaded(Ts...) -> Overloaded<Ts...>;
 
-GetTokenResult GetToken(Modules* modules, const GetTokenParams& params) {
+GetTokenResult GetToken(Modules* modules, const GetTokenParams& params) {  // NOLINT
     GetTokenResult result;
 
     auto iter = modules->find(params.file);
@@ -73,14 +74,19 @@ GetTokenResult GetToken(Modules* modules, const GetTokenParams& params) {
                             token_modifiers |= TokenModifier::kDefaultLibrary;
                         }
                     } else {
-                        // It's keyword
+                        // It's a keyword
                         skip = true;
                     }
                 },
                 [&token_type](const SkSL::Field* /*value*/) { token_type = TokenType::kProperty; },
                 [&token_type](const SkSL::FieldSymbol* /*value*/) { token_type = TokenType::kProperty; },
-                [](const SkSL::Literal* value) {
-                    // TODO:
+                [&token_type, &skip](const SkSL::Literal* value) {
+                    if (value->isFloatLiteral() || value->isIntLiteral()) {
+                        token_type = TokenType::kNumber;
+                    } else {
+                        // It's a bool
+                        skip = true;
+                    }
                 },
                 [&token_type](const SkSL::Setting* /*value*/) { token_type = TokenType::kProperty; },
                 [&token_type](const SkSL::Swizzle* /*value*/) { token_type = TokenType::kProperty; },
@@ -91,7 +97,7 @@ GetTokenResult GetToken(Modules* modules, const GetTokenParams& params) {
             },
             token.value
         );
-        if (!skip) {
+        if (skip) {
             continue;
         }
         result.tokens.push_back(SkSLToken {
