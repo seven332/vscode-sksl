@@ -19,6 +19,7 @@ It could be `shader`, `colorfilter`, `meshfrag` or `meshvert`.
 
 ## Features
 
+-   [x] Diagnostic
 -   [x] Document Symbol
 -   [x] Document Formatting (may **NOT** work as expected)
 -   [x] Semantic Token
