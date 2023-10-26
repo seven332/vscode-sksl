@@ -46,6 +46,7 @@
 #include "hash.h"
 #include "lexer.h"
 #include "token.h"
+#include "utf16_index.h"
 
 #pragma mark - Compile
 
@@ -499,6 +500,7 @@ UpdateResult Update(Modules* modules, UpdateParams params) {
             .content = content,
             .program = std::move(program),
             .tokens = std::move(tokens),
+            .utf16_index = UTF16Index(content),
         };
     }
 

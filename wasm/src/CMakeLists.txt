@@ -5,6 +5,7 @@ add_library(sksl-wasm-lib STATIC
     lexer.cpp
     formatter.cpp
     simple_codec.cpp
+    utf16_index.cpp
     action/update.cpp
     action/close.cpp
     action/format.cpp
@@ -31,6 +32,7 @@ target_link_options(sksl-wasm PRIVATE
 add_executable(sksl-wasm-lib-test
     formatter_test.cpp
     simple_codec_test.cpp
+    utf16_index_test.cpp
 )
 target_link_libraries(sksl-wasm-lib-test PRIVATE sksl-wasm-lib gmock_main)
 enable_testing()

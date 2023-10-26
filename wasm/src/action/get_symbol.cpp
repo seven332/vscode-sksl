@@ -144,6 +144,17 @@ static void Parse(std::vector<SkSLSymbol>* symbols, const SkSL::StructDefinition
     });
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
+static void ToUTF16Range(std::vector<SkSLSymbol>* result, const UTF16Index& utf16_index) {
+    for (auto& symbol : *result) {
+        symbol.range.start = utf16_index.ToUTF16(symbol.range.start);
+        symbol.range.end = utf16_index.ToUTF16(symbol.range.end);
+        symbol.selection_range.start = utf16_index.ToUTF16(symbol.selection_range.start);
+        symbol.selection_range.end = utf16_index.ToUTF16(symbol.selection_range.end);
+        ToUTF16Range(&symbol.children, utf16_index);
+    }
+}
+
 GetSymbolResult GetSymbol(Modules* modules, const GetSymbolParams& params) {
     GetSymbolResult result;
 
@@ -191,6 +202,9 @@ GetSymbolResult GetSymbol(Modules* modules, const GetSymbolParams& params) {
         }
         }
     }
+
+    // Convert range to utf-16
+    ToUTF16Range(&result.symbols, iter->second.utf16_index);
 
     return result;
 }
