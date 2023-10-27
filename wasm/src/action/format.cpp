@@ -10,6 +10,6 @@ FormatResult Format(Modules* modules, const FormatParams& params) {
         return result;
     }
 
-    result.newContent = Formatter().Format(iter->second.content);
+    result.new_content = Formatter().Format(iter->second.content);
     return result;
 }

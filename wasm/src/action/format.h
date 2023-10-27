@@ -16,10 +16,10 @@ struct FormatParams {
 };
 
 struct FormatResult {
-    std::string newContent;  // NOLINT
+    std::string new_content;
 
     friend void Write(std::vector<std::byte>* bytes, const FormatResult& value) {
-        Write(bytes, value.newContent);
+        Write(bytes, value.new_content);
     }
 };
 
