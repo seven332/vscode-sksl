@@ -126,32 +126,51 @@ HoverResult Hover(Modules* modules, const HoverParams& params) {
     std::visit(
         Overloaded {
             [](const SkSL::Extension* /*value*/) {},
-            [&result, &token](const SkSL::FunctionDeclaration* value) {
-                if (!value->isBuiltin()) {
-                    return;
+            [&result](const SkSL::FunctionDeclaration* value) {
+                if (value->isBuiltin()) {
+                    auto doc = GetBuiltinFunctionDoc(std::string(value->name()));
+                    if (!doc) {
+                        return;
+                    }
+                    result.found = true;
+                    result.markdown = true;
+                    result.content += "`" + value->description() + "`\n";
+                    result.content += "\n---\n\n";
+                    result.content += std::string(doc->summary);
+                    if (!doc->url.empty()) {
+                        result.content += " - [Reference](https://registry.khronos.org/OpenGL-Refpages/es3.0/html/" +
+                                          doc->url + ".xhtml)";
+                    }
+                } else {
+                    result.found = true;
+                    result.markdown = true;
+                    result.content += "`" + value->description() + "`";
                 }
-                auto doc = GetBuiltinFunctionDoc(std::string(value->name()));
-                if (!doc) {
-                    return;
-                }
+            },
+            [&result](const SkSL::Variable* value) {
                 result.found = true;
                 result.markdown = true;
                 result.content += "`" + value->description() + "`\n";
-                result.content += "\n---\n\n";
-                result.content += std::string(doc->summary);
-                if (!doc->url.empty()) {
-                    result.content += " - [Reference](https://registry.khronos.org/OpenGL-Refpages/es3.0/html/" +
-                                      doc->url + ".xhtml)";
-                }
             },
-            [](const SkSL::Variable* /*value*/) {},
             [](const SkSL::Type* /*value*/) {},
-            [](const SkSL::Field* /*value*/) {},
-            [](const SkSL::FieldSymbol* /*value*/) {},
+            [&result](const SkSL::Field* value) {
+                result.found = true;
+                result.markdown = true;
+                result.content += "`" + value->description() + "`\n";
+            },
+            [&result](const SkSL::FieldSymbol* value) {
+                result.found = true;
+                result.markdown = true;
+                result.content += "`" + value->description() + "`\n";
+            },
             [](const SkSL::Literal* /*value*/) {},
             [](const SkSL::Setting* /*value*/) {},
             [](const SkSL::Swizzle* /*value*/) {},
-            [](const SkSL::ChildCall* /*value*/) {},
+            [&result](const SkSL::ChildCall* /*value*/) {
+                result.found = true;
+                result.markdown = true;
+                result.content += "[Reference](https://skia.org/docs/user/sksl/#evaluating-sampling-other-skshaders)";
+            },
         },
         token.value
     );
