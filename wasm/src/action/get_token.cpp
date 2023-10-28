@@ -4,6 +4,7 @@
 #include <variant>
 
 #include "data.h"
+#include "overloaded.h"
 #include "token.h"
 
 enum class TokenType : std::uint32_t {
@@ -22,14 +23,6 @@ enum TokenModifier : std::uint32_t {
     kReadonly = 1,
     kDefaultLibrary = 2,
 };
-
-template<class... Ts>
-struct Overloaded : Ts... {
-    using Ts::operator()...;
-};
-
-template<class... Ts>
-Overloaded(Ts...) -> Overloaded<Ts...>;
 
 static void Convert(std::vector<SkSLToken>* result, const Token& token) {
     TokenType token_type = TokenType::kClass;

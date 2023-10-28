@@ -13,6 +13,7 @@ connection.onInitialize(async (params) => {
             textDocumentSync: ls.TextDocumentSyncKind.Incremental,
             documentSymbolProvider: true,
             documentFormattingProvider: true,
+            hoverProvider: true,
             semanticTokensProvider: {
                 legend: {
                     tokenTypes: [
@@ -63,6 +64,10 @@ connection.onRequest(ls.SemanticTokensRequest.method, (params: ls.SemanticTokens
 
 connection.onRequest(ls.SemanticTokensRangeRequest.method, (params: ls.SemanticTokensRangeParams) => {
     return server?.getTokenRange(params.textDocument.uri, params.range) ?? { data: [] }
+})
+
+connection.onHover((params) => {
+    return server?.hover(params.textDocument.uri, params.position)
 })
 
 documents.listen(connection)

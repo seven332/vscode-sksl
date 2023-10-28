@@ -9,6 +9,7 @@
 #include "action/format.h"
 #include "action/get_symbol.h"
 #include "action/get_token.h"
+#include "action/hover.h"
 #include "action/update.h"
 #include "module.h"
 
@@ -54,6 +55,7 @@ ACTION(GetSymbol, "get_symbol")
 ACTION(Format, "format")
 ACTION(GetToken, "get_token")
 ACTION(GetTokenRange, "get_token_range")
+ACTION(Hover, "hover")
 
 #undef ACTION
 }

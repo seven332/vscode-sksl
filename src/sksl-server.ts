@@ -212,6 +212,31 @@ export class SkSLServer {
         return builder.build()
     }
 
+    public hover(uri: string, position: ls.Position): ls.Hover | undefined {
+        const file = URI.parse(uri).fsPath
+        const filePosition = this.filePositions.get(file)
+        if (!filePosition) {
+            return
+        }
+
+        // Call wasm
+        this.setParams<HoverParams>({ file, position: filePosition.getOffset(position) })
+        this.wasm._Hover()
+        const result = this.getResult<HoverResult>(dummyHoverResult)
+
+        if (!result.found) {
+            return
+        }
+
+        return {
+            contents: {
+                kind: result.markdown ? ls.MarkupKind.Markdown : ls.MarkupKind.PlainText,
+                value: result.content,
+            },
+            range: toRange(filePosition, result.range),
+        }
+    }
+
     private files = new Map<string, Set<string>>()
     private filePositions = new Map<string, FilePosition>()
 
@@ -357,6 +382,25 @@ interface GetTokenRangeParams {
 type GetTokenRangeResult = GetTokenResult
 
 const dummyGetTokenRangeResult = dummyGetTokenResult
+
+interface HoverParams {
+    file: string
+    position: number
+}
+
+interface HoverResult {
+    found: boolean
+    markdown: boolean
+    content: string
+    range: SkSLRange
+}
+
+const dummyHoverResult: HoverResult = {
+    found: false,
+    markdown: false,
+    content: '',
+    range: dummySkSLRange,
+}
 
 function toRange(filePosition: FilePosition, range: SkSLRange): ls.Range {
     return ls.Range.create(filePosition.getPosition(range.start), filePosition.getPosition(range.end))
