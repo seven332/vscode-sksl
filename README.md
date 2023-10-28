@@ -1,5 +1,7 @@
 # SkSL Language Server
 
+![workflow](https://github.com/seven332/vscode-sksl/actions/workflows/build.yml/badge.svg)
+
 Code IntelliSense for [Skia's shading language](https://skia.org/docs/user/sksl/).
 
 ## Usage
