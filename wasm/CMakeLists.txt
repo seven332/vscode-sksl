@@ -10,3 +10,4 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -fno-rtti")
 
 add_subdirectory(third_party SYSTEM)
 add_subdirectory(src)
+add_subdirectory(golden)

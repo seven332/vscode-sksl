@@ -123,7 +123,7 @@ add_library(skia_sksl STATIC
     ${SKIA_SOURCE_DIR}/src/ports/SkMemory_malloc.cpp
     ${SKIA_SOURCE_DIR}/src/ports/SkDebug_stdio.cpp
     ${SKIA_SOURCE_DIR}/src/ports/SkOSFile_stdio.cpp
-    # ${SKIA_SOURCE_DIR}/src/ports/SkOSFile_posix.cpp
+    ${SKIA_SOURCE_DIR}/src/ports/SkOSFile_posix.cpp
     # ${SKIA_SOURCE_DIR}/src/utils/SkJSON.cpp
     # ${SKIA_SOURCE_DIR}/src/utils/SkJSONWriter.cpp
     # ${SKIA_SOURCE_DIR}/src/utils/SkOSPath.cpp
@@ -132,7 +132,6 @@ add_library(skia_sksl STATIC
     ${SKIA_SOURCE_DIR}/src/utils/SkEventTracer.cpp
 )
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_sources(skia_sksl PRIVATE ${SKIA_SOURCE_DIR}/src/ports/SkOSFile_posix.cpp)
     target_compile_definitions(skia_sksl PUBLIC SK_BUILD_FOR_UNIX)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     target_compile_definitions(skia_sksl PUBLIC SK_BUILD_FOR_MAC)

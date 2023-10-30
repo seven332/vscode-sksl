@@ -1,0 +1,7 @@
+// kind=shader
+uniform shader srcImage;
+uniform shader dstImage;
+uniform blender arithBlend;
+half4 main(float2 xy) {
+    return arithBlend.eval(srcImage.eval(xy), dstImage.eval(xy));
+}

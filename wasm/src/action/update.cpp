@@ -98,6 +98,7 @@ static std::unique_ptr<SkSL::Program> CompileProgram(
     SkSLErrorReporter* error_reporter
 ) {
     SkSL::ProgramSettings settings;
+    settings.fUseMemoryPool = false;
     settings.fOptimize = false;
     settings.fRemoveDeadFunctions = false;
     settings.fRemoveDeadVariables = false;
