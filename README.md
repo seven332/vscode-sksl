@@ -25,3 +25,4 @@ It could be `shader`, `colorfilter`, `meshfrag` or `meshvert`.
 -   [x] Document Symbol
 -   [x] Document Formatting (may **NOT** work as expected)
 -   [x] Semantic Token
+-   [x] Hover
