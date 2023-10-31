@@ -1,10 +1,12 @@
 #pragma once
 
+#include <__compare/ordering.h>
 #include <src/sksl/SkSLPosition.h>
 
 #include <algorithm>
 #include <cstdint>
 #include <limits>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -34,6 +36,13 @@ struct SkSLRange {
     void Join(const SkSLRange& other) {
         start = std::min(start, other.start);
         end = std::max(end, other.end);
+    }
+
+    [[nodiscard]] bool operator==(const SkSLRange& other) const = default;
+
+    friend std::ostream& operator<<(std::ostream& os, const SkSLRange& range) {
+        os << range.start << ", " << range.end;
+        return os;
     }
 
     friend std::size_t Read(std::span<std::byte> bytes, std::size_t offset, SkSLRange* value) {
