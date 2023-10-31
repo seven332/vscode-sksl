@@ -1,0 +1,29 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "wasm test",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/wasm/build_test/src/sksl-wasm-lib-test",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/wasm",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb"
+        },
+        {
+            "name": "wasm golden",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/wasm/build_test/golden/sksl-wasm-golden-test",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/wasm",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb"
+        }
+    ]
+}
