@@ -1,6 +1,5 @@
 #pragma once
 
-#include <__compare/ordering.h>
 #include <src/sksl/SkSLPosition.h>
 
 #include <algorithm>
