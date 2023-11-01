@@ -67,14 +67,9 @@ static void Convert(std::vector<SkSLToken>* result, const Token& token) {
             },
             [&token_type](const SkSL::Field* /*value*/) { token_type = TokenType::kProperty; },
             [&token_type](const SkSL::FieldSymbol* /*value*/) { token_type = TokenType::kProperty; },
-            [&token_type, &skip](const SkSL::Literal* value) {
-                if (value->isFloatLiteral() || value->isIntLiteral()) {
-                    token_type = TokenType::kNumber;
-                } else {
-                    // It's a bool
-                    skip = true;
-                }
-            },
+            [&skip](const Token::Bool& /*value*/) { skip = true; },
+            [&token_type](const Token::Int& /*value*/) { token_type = TokenType::kNumber; },
+            [&token_type](const Token::Float& /*value*/) { token_type = TokenType::kNumber; },
             [&token_type](const SkSL::Setting* /*value*/) { token_type = TokenType::kProperty; },
             [&token_type](const SkSL::Swizzle* /*value*/) { token_type = TokenType::kProperty; },
             [&token_type, &token_modifiers](const SkSL::ChildCall* /*value*/) {

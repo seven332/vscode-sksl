@@ -14,7 +14,7 @@ TEST(GoldenTest, ArithMode) {
     EXPECT_TRUE(update_result.succeed);
     // NOLINTBEGIN
     ExpectTokens(
-        modules.find(file)->second.tokens,
+        modules.find(file)->second,
         {
             {{23, 29},   true,  "shader"    },
             {{30, 38},   false, "srcImage"  },

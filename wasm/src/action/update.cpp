@@ -2,11 +2,13 @@
 
 #include <src/sksl/SkSLCompiler.h>
 #include <src/sksl/SkSLErrorReporter.h>
+#include <src/sksl/SkSLLexer.h>
 #include <src/sksl/SkSLModuleLoader.h>
 #include <src/sksl/SkSLParser.h>
 #include <src/sksl/SkSLPosition.h>
 #include <src/sksl/SkSLProgramKind.h>
 #include <src/sksl/SkSLProgramSettings.h>
+#include <src/sksl/SkSLString.h>
 #include <src/sksl/SkSLUtil.h>
 #include <src/sksl/ir/SkSLBinaryExpression.h>
 #include <src/sksl/ir/SkSLConstructor.h>
@@ -37,6 +39,7 @@
 #include <src/sksl/ir/SkSLVarDeclarations.h>
 #include <src/sksl/ir/SkSLVariableReference.h>
 
+#include <cstdint>
 #include <iostream>
 #include <string>
 #include <string_view>
@@ -278,8 +281,46 @@ static void Parse(Context* context, const SkSL::Expression* expression) {  // NO
         break;
     }
     case SkSL::ExpressionKind::kLiteral: {
+        // The position of Literal might be wrong
+        // Use lexer to find the position
         const auto& l = expression->as<SkSL::Literal>();
-        PushOrigin(context, l.position(), &l);
+        const auto& position = l.position();
+        auto offset = position.startOffset();
+        auto length = position.endOffset() - position.startOffset();
+        auto fragment = context->content.substr(offset, length);
+        TraverseTokens(fragment, [context, offset](const SkSL::Token& token) {
+            SkSLRange range(offset + token.fOffset, offset + token.fOffset + token.fLength);
+            auto text = context->content.substr(range.start, range.end - range.start);
+            if (token.fKind == SkSL::Token::Kind::TK_FLOAT_LITERAL) {
+                float value = 0;
+                SkSL::stod(text, &value);
+                context->tokens->push_back(Token {
+                    .value = Token::Float {.value = value},
+                    .range = range,
+                    .is_reference = false,
+                });
+            } else if (token.fKind == SkSL::Token::Kind::TK_INT_LITERAL) {
+                std::int64_t value = 0;
+                SkSL::stoi(text, &value);
+                context->tokens->push_back(Token {
+                    .value = Token::Int {.value = value},
+                    .range = range,
+                    .is_reference = false,
+                });
+            } else if (token.fKind == SkSL::Token::Kind::TK_FALSE_LITERAL) {
+                context->tokens->push_back(Token {
+                    .value = Token::Bool {.value = false},
+                    .range = range,
+                    .is_reference = false,
+                });
+            } else if (token.fKind == SkSL::Token::Kind::TK_TRUE_LITERAL) {
+                context->tokens->push_back(Token {
+                    .value = Token::Bool {.value = true},
+                    .range = range,
+                    .is_reference = false,
+                });
+            }
+        });
         break;
     }
     case SkSL::ExpressionKind::kMethodReference:

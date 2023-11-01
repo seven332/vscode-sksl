@@ -8,8 +8,10 @@
 #include <regex>
 #include <sstream>
 #include <string>
+#include <string_view>
 
-#include "overloaded.h"
+#include "data.h"
+#include "module.h"
 #include "token.h"
 
 std::string ReadSkSL(const char* source_path) {
@@ -34,40 +36,26 @@ std::string GetSkSLProgramKind(const std::string& content) {
     return match.str(1);
 }
 
-static std::string GetName(const Token::Value& value) {
-    return std::visit(
-        Overloaded {
-            [](const SkSL::Extension* value) { return std::string(value->name()); },
-            [](const SkSL::FunctionDeclaration* value) { return std::string(value->name()); },
-            [](const SkSL::Variable* value) { return std::string(value->name()); },
-            [](const SkSL::Type* value) { return std::string(value->name()); },
-            [](const SkSL::Field* value) { return std::string(value->fName); },
-            [](const SkSL::FieldSymbol* value) { return std::string(value->name()); },
-            [](const SkSL::Literal* value) { return value->description(SkSL::OperatorPrecedence::kExpression); },
-            [](const SkSL::Setting* value) { return std::string(value->name()); },
-            [](const SkSL::Swizzle* value) { return SkSL::Swizzle::MaskString(value->components()); },
-            [](const SkSL::ChildCall* /*value*/) { return std::string("eval"); },
-        },
-        value
-    );
+static std::string_view Substr(std::string_view content, const SkSLRange& range) {
+    return content.substr(range.start, range.end - range.start);
 }
 
-void ExpectTokens(const std::vector<Token>& actual, const std::vector<ExpectedToken>& expected) {
-    auto i1 = actual.begin();
+void ExpectTokens(const Module& module, const std::vector<ExpectedToken>& expected) {
+    auto i1 = module.tokens.begin();
     auto i2 = expected.begin();
-    for (; i1 != actual.end() && i2 != expected.end(); ++i1, ++i2) {
+    for (; i1 != module.tokens.end() && i2 != expected.end(); ++i1, ++i2) {
         ASSERT_EQ(i1->range, i2->range);
         ASSERT_EQ(i1->is_reference, i2->is_reference);
-        ASSERT_EQ(GetName(i1->value), i2->name);
+        ASSERT_EQ(Substr(module.content, i1->range), i2->name);
     }
-    ASSERT_EQ(actual.size(), expected.size());
+    ASSERT_EQ(module.tokens.size(), expected.size());
 }
 
-std::string ToString(const std::vector<Token>& tokens) {
+std::string ToString(const Module& module) {
     std::stringstream ss;
-    for (const auto& token : tokens) {
+    for (const auto& token : module.tokens) {
         ss << "{{" << token.range.start << ", " << token.range.end << "}, " << (token.is_reference ? "true" : "false")
-           << ", \"" << GetName(token.value) << "\"},\n";
+           << ", \"" << Substr(module.content, token.range) << "\"},\n";
     }
     return std::move(ss).str();
 }

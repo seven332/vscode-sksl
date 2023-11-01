@@ -163,7 +163,9 @@ HoverResult Hover(Modules* modules, const HoverParams& params) {
                 result.markdown = true;
                 result.content += "`" + value->description() + "`\n";
             },
-            [](const SkSL::Literal* /*value*/) {},
+            [](const Token::Bool& /*value*/) {},
+            [](const Token::Int& /*value*/) {},
+            [](const Token::Float& /*value*/) {},
             [](const SkSL::Setting* /*value*/) {},
             [](const SkSL::Swizzle* /*value*/) {},
             [&result](const SkSL::ChildCall* /*value*/) {

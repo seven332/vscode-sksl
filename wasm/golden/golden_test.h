@@ -3,7 +3,7 @@
 #include <string>
 
 #include "data.h"
-#include "token.h"
+#include "module.h"
 
 std::string ReadSkSL(const char* source_path);
 
@@ -15,6 +15,6 @@ struct ExpectedToken {
     std::string name;
 };
 
-void ExpectTokens(const std::vector<Token>& actual, const std::vector<ExpectedToken>& expected);
+void ExpectTokens(const Module& module, const std::vector<ExpectedToken>& expected);
 
-std::string ToString(const std::vector<Token>& tokens);
+std::string ToString(const Module& module);

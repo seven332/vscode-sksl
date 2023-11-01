@@ -17,6 +17,18 @@
 #include "data.h"
 
 struct Token {
+    struct Bool {
+        bool value;
+    };
+
+    struct Int {
+        std::int64_t value;
+    };
+
+    struct Float {
+        float value;
+    };
+
     using Value = std::variant<
         const SkSL::Extension*,
         const SkSL::FunctionDeclaration*,
@@ -24,7 +36,9 @@ struct Token {
         const SkSL::Type*,
         const SkSL::Field*,
         const SkSL::FieldSymbol*,
-        const SkSL::Literal*,
+        Bool,
+        Int,
+        Float,
         const SkSL::Setting*,
         const SkSL::Swizzle*,   // components
         const SkSL::ChildCall*  // eval

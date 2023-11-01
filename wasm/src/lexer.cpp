@@ -29,3 +29,16 @@ SkSLRange FindIdentifier(std::string_view content, std::string_view name) {
         return Find(content, name, TokenKind::TK_IDENTIFIER);
     }
 }
+
+void TraverseTokens(std::string_view content, const std::function<void(const SkSL::Token& token)>& block) {
+    SkSL::Lexer lexer;
+    lexer.start(content);
+    SkSL::Token token;
+    for (;;) {
+        token = lexer.next();
+        if (token.fKind == TokenKind::TK_END_OF_FILE) {
+            break;
+        }
+        block(token);
+    }
+}

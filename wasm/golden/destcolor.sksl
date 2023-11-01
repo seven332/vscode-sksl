@@ -1,0 +1,4 @@
+// kind=blender
+half4 main(half4 src, half4 dst) {
+    return (half4(1) - dst).rgb1;
+}
