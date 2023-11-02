@@ -84,3 +84,10 @@ TEST(FormatterTest, brace) {
         "}\n"
     );
 }
+
+TEST(FormatterTest, Swizzle) {
+    EXPECT_STREQ(Formatter().Format("a.rgb1").c_str(), "a.rgb1\n");
+    EXPECT_STREQ(Formatter().Format("a.r1ba").c_str(), "a.r1ba\n");
+    EXPECT_STREQ(Formatter().Format("a.1gba").c_str(), "a.1gba\n");
+    EXPECT_STREQ(Formatter().Format("a.1gb1").c_str(), "a.1gb1\n");
+}

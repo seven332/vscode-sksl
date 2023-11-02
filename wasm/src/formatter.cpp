@@ -93,8 +93,15 @@ std::string Formatter::Format(std::string_view content) {  // NOLINT
             if (last.fKind == TokenKind::TK_PLUSPLUS || last.fKind == TokenKind::TK_MINUSMINUS ||
                 last.fKind == TokenKind::TK_BITWISENOT || last.fKind == TokenKind::TK_LOGICALNOT ||
                 last.fKind == TokenKind::TK_LPAREN || last.fKind == TokenKind::TK_LBRACKET ||
-                last.fKind == TokenKind::TK_DOT) {
+                last.fKind == TokenKind::TK_DOT ||
+                (token.fKind == TokenKind::TK_FLOAT_LITERAL && IsExpressionEnd(last.fKind) &&
+                 content[token.fOffset] == '.' && GetLastMaybeEmptyToken().fOffset == last.fOffset) ||
+                (token.fKind == TokenKind::TK_IDENTIFIER && last.fKind == TokenKind::TK_FLOAT_LITERAL &&
+                 GetLastMaybeEmptyToken().fOffset == last.fOffset) ||
+                (token.fKind == TokenKind::TK_INT_LITERAL && last.fKind == TokenKind::TK_IDENTIFIER &&
+                 GetLastMaybeEmptyToken().fOffset == last.fOffset)) {
                 // ++x, --x, ~x, !x, (x, [x, .x
+                // swizzle component a.1gb1
                 AppendNoSpace(token);
             } else if (last.fKind == TokenKind::TK_PLUS || last.fKind == TokenKind::TK_MINUS) {
                 auto second_last = GetSecondLastToken();
@@ -335,6 +342,14 @@ SkSL::Token Formatter::GetLastToken() const {
         }
     }
     return {};
+}
+
+SkSL::Token Formatter::GetLastMaybeEmptyToken() const {
+    if (line_tokens_.empty()) {
+        return {};
+    } else {
+        return line_tokens_.back();
+    }
 }
 
 SkSL::Token Formatter::GetSecondLastToken() const {

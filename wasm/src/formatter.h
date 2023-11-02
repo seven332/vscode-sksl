@@ -34,6 +34,7 @@ class Formatter {
 
     [[nodiscard]] bool IsNewLine() const;
     [[nodiscard]] SkSL::Token GetLastToken() const;
+    [[nodiscard]] SkSL::Token GetLastMaybeEmptyToken() const;
     [[nodiscard]] SkSL::Token GetSecondLastToken() const;
     [[nodiscard]] std::string_view GetTokenText(SkSL::Token token) const;
 
