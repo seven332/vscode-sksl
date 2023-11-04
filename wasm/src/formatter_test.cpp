@@ -91,3 +91,10 @@ TEST(FormatterTest, Swizzle) {
     EXPECT_STREQ(Formatter().Format("a.1gba").c_str(), "a.1gba\n");
     EXPECT_STREQ(Formatter().Format("a.1gb1").c_str(), "a.1gb1\n");
 }
+
+TEST(FormatterTest, Layout) {
+    EXPECT_STREQ(
+        Formatter().Format("layout (color) uniform vec4 in_color;").c_str(),
+        "layout(color) uniform vec4 in_color;\n"
+    );
+}

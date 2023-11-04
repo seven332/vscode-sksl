@@ -165,7 +165,8 @@ std::string Formatter::Format(std::string_view content) {  // NOLINT
         case TokenKind::TK_LPAREN: {  // (
             auto last = GetLastToken();
             if (last.fKind == TokenKind::TK_LPAREN || last.fKind == TokenKind::TK_LBRACKET ||
-                IsIdentifier(last.fKind)) {
+                IsIdentifier(last.fKind) ||
+                (last.fKind != TokenKind::TK_NONE && content.substr(last.fOffset, last.fLength) == "layout")) {
                 AppendNoSpace(token);
             } else {
                 AppendAfterSpace(token);
