@@ -1,0 +1,13 @@
+// kind=shader
+uniform shader in_blur;
+uniform shader in_original;
+uniform float in_inverseScale;
+uniform float in_mix;
+
+half4 main(float2 xy) {
+    float2 scaled_xy = float2(xy.x * in_inverseScale, xy.y * in_inverseScale);
+
+    half4 blurred = in_blur.eval(scaled_xy);
+    half4 composition = in_original.eval(xy);
+    return mix(composition, blurred, in_mix);
+}
