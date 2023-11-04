@@ -237,6 +237,25 @@ export class SkSLServer {
         }
     }
 
+    public definition(uri: string, position: ls.Position): ls.Location | undefined {
+        const file = URI.parse(uri).fsPath
+        const filePosition = this.filePositions.get(file)
+        if (!filePosition) {
+            return
+        }
+
+        // Call wasm
+        this.setParams<DefinitionParams>({ file, position: filePosition.getOffset(position) })
+        this.wasm._Definition()
+        const result = this.getResult<DefinitionResult>(dummyDefinitionResult)
+
+        if (!result.found) {
+            return
+        }
+
+        return ls.Location.create(uri, toRange(filePosition, result.range))
+    }
+
     private files = new Map<string, Set<string>>()
     private filePositions = new Map<string, FilePosition>()
 
@@ -399,6 +418,21 @@ const dummyHoverResult: HoverResult = {
     found: false,
     markdown: false,
     content: '',
+    range: dummySkSLRange,
+}
+
+interface DefinitionParams {
+    file: string
+    position: number
+}
+
+interface DefinitionResult {
+    found: boolean
+    range: SkSLRange
+}
+
+const dummyDefinitionResult: DefinitionResult = {
+    found: false,
     range: dummySkSLRange,
 }
 

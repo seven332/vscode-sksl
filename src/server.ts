@@ -14,6 +14,7 @@ connection.onInitialize(async (params) => {
             documentSymbolProvider: true,
             documentFormattingProvider: true,
             hoverProvider: true,
+            definitionProvider: true,
             semanticTokensProvider: {
                 legend: {
                     tokenTypes: [
@@ -68,6 +69,10 @@ connection.onRequest(ls.SemanticTokensRangeRequest.method, (params: ls.SemanticT
 
 connection.onHover((params) => {
     return server?.hover(params.textDocument.uri, params.position)
+})
+
+connection.onDefinition((params) => {
+    return server?.definition(params.textDocument.uri, params.position)
 })
 
 documents.listen(connection)
