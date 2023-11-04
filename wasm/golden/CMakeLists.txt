@@ -6,6 +6,7 @@ add_executable(sksl-wasm-golden-test
     arithmode.cpp
     destcolor.cpp
     kawase_blur_rt.cpp
+    ripple_shader.cpp
 )
 target_link_libraries(sksl-wasm-golden-test PRIVATE sksl-wasm-lib gmock_main)
 enable_testing()
