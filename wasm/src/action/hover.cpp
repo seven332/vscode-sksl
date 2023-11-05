@@ -8,13 +8,13 @@
 #include "overloaded.h"
 #include "token.h"
 
-struct BuiltinFunctionDoc {
+struct BuiltinFunctionInfo {
     std::string url;
     std::string summary;
 };
 
-static std::optional<BuiltinFunctionDoc> GetBuiltinFunctionDoc(const std::string& name) {
-    static const std::unordered_map<std::string, BuiltinFunctionDoc> kMap = {
+static std::optional<BuiltinFunctionInfo> GetBuiltinFunctionInfo(const std::string& name) {
+    static const std::unordered_map<std::string, BuiltinFunctionInfo> kMap = {
         {"radians",          {"radians", "convert a quantity in degrees to radians"}                                   },
         {"degrees",          {"degrees", "convert a quantity in radians to degrees"}                                   },
         {"sin",              {"sin", "return the sine of the parameter"}                                               },
@@ -96,6 +96,13 @@ static std::optional<BuiltinFunctionDoc> GetBuiltinFunctionDoc(const std::string
     }
 }
 
+struct HoverDoc {
+    std::string type;
+    std::string name;
+    std::string content;
+    std::string summary;
+};
+
 HoverResult Hover(Modules* modules, const HoverParams& params) {
     HoverResult result;
     result.found = false;
@@ -123,64 +130,102 @@ HoverResult Hover(Modules* modules, const HoverParams& params) {
         return result;
     }
 
-    std::visit(
+    std::optional<HoverDoc> doc = std::visit(
         Overloaded {
-            [](const SkSL::Extension* /*value*/) {},
-            [&result](const SkSL::FunctionDeclaration* value) {
+            [](const SkSL::Extension* /*value*/) { return std::optional<HoverDoc>(); },
+            [](const SkSL::FunctionDeclaration* value) {
                 if (value->isBuiltin()) {
-                    auto doc = GetBuiltinFunctionDoc(std::string(value->name()));
-                    if (!doc) {
-                        return;
+                    auto info = GetBuiltinFunctionInfo(std::string(value->name()));
+                    if (!info) {
+                        return std::optional<HoverDoc>();
                     }
-                    result.found = true;
-                    result.markdown = true;
-                    result.content += "`" + value->description() + "`\n";
-                    result.content += "\n---\n\n";
-                    result.content += std::string(doc->summary);
-                    if (!doc->url.empty()) {
-                        result.content += " - [Reference](https://registry.khronos.org/OpenGL-Refpages/es3.0/html/" +
-                                          doc->url + ".xhtml)";
+                    HoverDoc doc;
+                    doc.type = "function";
+                    doc.name = value->name();
+                    doc.content = value->description();
+                    doc.summary = std::string(info->summary);
+                    if (!info->url.empty()) {
+                        doc.summary += " - [Reference](https://registry.khronos.org/OpenGL-Refpages/es3.0/html/" +
+                                       info->url + ".xhtml)";
                     }
+                    return std::make_optional(doc);
                 } else {
-                    result.found = true;
-                    result.markdown = true;
-                    result.content += "`" + value->description() + "`";
+                    HoverDoc doc;
+                    doc.type = "function";
+                    doc.name = value->name();
+                    doc.content = value->description();
+                    doc.summary = "";
+                    return std::make_optional(doc);
                 }
             },
-            [&result](const SkSL::Variable* value) {
-                result.found = true;
-                result.markdown = true;
-                result.content += "`" + value->description() + "`\n";
+            [](const SkSL::Variable* value) {
+                HoverDoc doc;
+                switch (value->storage()) {
+                case SkSL::VariableStorage::kGlobal:
+                    doc.type = "global-variable";
+                    break;
+                case SkSL::VariableStorage::kInterfaceBlock:
+                    doc.type = "interface-block-variable";
+                    break;
+                case SkSL::VariableStorage::kLocal:
+                    doc.type = "local-variable";
+                    break;
+                case SkSL::VariableStorage::kParameter:
+                    doc.type = "parameter-variable";
+                    break;
+                }
+                doc.name = value->name();
+                doc.content = value->description();
+                doc.summary = "";
+                return std::make_optional(doc);
             },
-            [](const SkSL::Type* /*value*/) {},
-            [&result](const SkSL::Field* value) {
-                result.found = true;
-                result.markdown = true;
-                result.content += "`" + value->description() + "`\n";
+            [](const SkSL::Type* /*value*/) { return std::optional<HoverDoc>(); },
+            [](const SkSL::Field* value) {
+                HoverDoc doc;
+                doc.type = "field";
+                doc.name = value->fName;
+                doc.content = value->description();
+                doc.summary = "";
+                return std::make_optional(doc);
             },
-            [&result](const SkSL::FieldSymbol* value) {
-                result.found = true;
-                result.markdown = true;
-                result.content += "`" + value->description() + "`\n";
+            [](const SkSL::FieldSymbol* value) {
+                HoverDoc doc;
+                doc.type = "field";
+                doc.name = value->name();
+                doc.content = value->description();
+                doc.summary = "";
+                return std::make_optional(doc);
             },
-            [](const Token::Bool& /*value*/) {},
-            [](const Token::Int& /*value*/) {},
-            [](const Token::Float& /*value*/) {},
-            [](const SkSL::Setting* /*value*/) {},
-            [](const SkSL::Swizzle* /*value*/) {},
-            [&result](const SkSL::ChildCall* /*value*/) {
-                result.found = true;
-                result.markdown = true;
-                result.content += "[Reference](https://skia.org/docs/user/sksl/#evaluating-sampling-other-skshaders)";
+            [](const Token::Bool& /*value*/) { return std::optional<HoverDoc>(); },
+            [](const Token::Int& /*value*/) { return std::optional<HoverDoc>(); },
+            [](const Token::Float& /*value*/) { return std::optional<HoverDoc>(); },
+            [](const SkSL::Setting* /*value*/) { return std::optional<HoverDoc>(); },
+            [](const SkSL::Swizzle* /*value*/) { return std::optional<HoverDoc>(); },
+            [](const SkSL::ChildCall* /*value*/) {
+                HoverDoc doc;
+                doc.type = "child-call";
+                doc.name = "eval";
+                doc.content = "";
+                doc.summary = "[Reference](https://skia.org/docs/user/sksl/#evaluating-sampling-other-skshaders)";
+                return std::make_optional(doc);
             },
         },
         token.value
     );
 
     // Convert result range to utf-16
-    if (result.found) {
+    if (doc) {
+        result.found = true;
+        result.markdown = true;
         result.range.start = iter->second.utf16_index.ToUTF16(token.range.start);
         result.range.end = iter->second.utf16_index.ToUTF16(token.range.end);
+        result.content += "### " + doc->type + "`" + doc->name + "`";
+        if (!doc->content.empty()) {
+            result.content += "\n\n---\n\n`" + doc->content + "`";
+        }
+        if (!doc->summary.empty()) {
+            result.content += "\n\n---\n\n" + doc->summary;
+        }
     }
 
     return result;
