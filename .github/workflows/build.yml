@@ -17,12 +17,12 @@ jobs:
 
             - uses: actions/setup-node@v3
               with:
-                  node-version: 'lts/Hydrogen'
+                  node-version: 'lts/Iron'
                   cache: 'npm'
 
             - uses: mymindstorm/setup-emsdk@v11
               with:
-                  version: 3.1.47
+                  version: 3.1.48
                   actions-cache-folder: 'emsdk-cache'
 
             - run: cmake --version
