@@ -1,7 +1,6 @@
 import { FilePosition } from './file-position'
 import { URI } from 'vscode-uri'
 import createSkSLWasm, { SkSLWasm } from './sksl-wasm'
-import { SkSLProgramKind, getSkSLProgramKind } from './sksl'
 import * as ls from 'vscode-languageserver/node'
 import { decode, encode } from './simple-codec'
 import { uinteger } from 'vscode-languageclient'
@@ -17,46 +16,25 @@ export class SkSLServer {
         uris.add(uri)
         this.files.set(file, uris)
 
-        const kind = getSkSLProgramKind(content)
+        // Call wasm
+        this.setParams<UpdateParams>({ file, content })
+        this.wasm._Update()
+        const result = this.getResult<UpdateResult>(dummyUpdateResult)
 
-        if (kind) {
-            // This file is recognized
+        const filePosition = new FilePosition(content)
 
-            // Call wasm
-            this.setParams<UpdateParams>({ file, content, kind })
-            this.wasm._Update()
-            const result = this.getResult<UpdateResult>(dummyUpdateResult)
-
-            const filePosition = new FilePosition(content)
-
-            if (result.succeed) {
-                // Set new file position
-                this.filePositions.set(file, filePosition)
-            } else {
-                // Delete old file position
-                this.filePositions.delete(file)
-            }
-
-            // Return error
-            return result.errors.map((error) =>
-                ls.Diagnostic.create(toRange(filePosition, error.range), error.message, ls.DiagnosticSeverity.Error),
-            )
-        }
-
-        if (this.filePositions.has(file)) {
-            // Can't recognize the file
-
-            // Call wasm
-            this.setParams<CloseParams>({ file })
-            this.wasm._Close()
-
+        if (result.succeed) {
+            // Set new file position
+            this.filePositions.set(file, filePosition)
+        } else {
             // Delete old file position
             this.filePositions.delete(file)
-
-            return []
         }
 
-        return []
+        // Return error
+        return result.errors.map((error) =>
+            ls.Diagnostic.create(toRange(filePosition, error.range), error.message, ls.DiagnosticSeverity.Error),
+        )
     }
 
     public close(uri: string) {
@@ -340,7 +318,6 @@ const dummySkSLToken: SkSLToken = {
 interface UpdateParams {
     file: string
     content: string
-    kind: SkSLProgramKind
 }
 
 interface UpdateResult {

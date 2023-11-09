@@ -9,8 +9,7 @@ TEST(GoldenTest, KawaseBlurRt) {
     Modules modules;
     const auto* file = "kawase_blur_rt.sksl";
     auto content = ReadSkSL(__FILE__);
-    auto kind = GetSkSLProgramKind(content);
-    auto update_result = Update(&modules, {.file = file, .content = content, .kind = kind});
+    auto update_result = Update(&modules, {.file = file, .content = content});
     EXPECT_TRUE(update_result.succeed);
     // NOLINTBEGIN
     ExpectTokens(

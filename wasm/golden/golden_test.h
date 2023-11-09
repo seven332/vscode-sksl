@@ -7,8 +7,6 @@
 
 std::string ReadSkSL(const char* source_path);
 
-std::string GetSkSLProgramKind(const std::string& content);
-
 struct ExpectedToken {
     SkSLRange range;
     bool is_reference = false;

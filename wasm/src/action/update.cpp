@@ -41,6 +41,8 @@
 
 #include <cstdint>
 #include <iostream>
+#include <optional>
+#include <regex>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -75,8 +77,16 @@ class SkSLErrorReporter : public SkSL::ErrorReporter {
     std::vector<SkSLError> errors_;
 };
 
-static SkSL::ProgramKind ToProgramKind(const std::string& kind) {
-    switch (Hash(kind.data())) {
+std::optional<SkSL::ProgramKind> GetSkSLProgramKind(const std::string& content) {
+    std::regex re(
+        R"(^[ \t]*\/\/[ /\t]*kind[ \t]*[:=][ \t]*(shader|colorfilter|blender|meshfrag|meshvert))",
+        std::regex_constants::ECMAScript
+    );
+    std::cmatch match;
+    if (!std::regex_search(content.data(), match, re)) {
+        return std::nullopt;
+    }
+    switch (Hash(match.str(1).c_str())) {
     case Hash("shader"):
         return SkSL::ProgramKind::kRuntimeShader;
     case Hash("colorfilter"):
@@ -88,8 +98,7 @@ static SkSL::ProgramKind ToProgramKind(const std::string& kind) {
     case Hash("meshvert"):
         return SkSL::ProgramKind::kMeshVertex;
     default:
-        std::cerr << "Abort: invalid program kind: " << kind << '\n';
-        std::abort();
+        return std::nullopt;
     }
 }
 
@@ -506,6 +515,14 @@ static void Parse(Context* context, const SkSL::Program* program) {
 UpdateResult Update(Modules* modules, UpdateParams params) {
     if (params.content.size() <= sizeof(std::string)) {
         // Avoid small string optimization
+        modules->erase(params.file);
+        return {.succeed = false};
+    }
+
+    auto kind = GetSkSLProgramKind(params.content);
+    if (!kind) {
+        // TODO: no kind warning
+        modules->erase(params.file);
         return {.succeed = false};
     }
 
@@ -514,9 +531,8 @@ UpdateResult Update(Modules* modules, UpdateParams params) {
     SkSLErrorReporter error_reporter;
     compiler.context().fErrors = &error_reporter;
 
-    auto kind = ToProgramKind(params.kind);
     std::string_view content = params.content;
-    auto program = CompileProgram(&compiler, kind, params.file.c_str(), std::move(params.content), nullptr);
+    auto program = CompileProgram(&compiler, *kind, params.file.c_str(), std::move(params.content), nullptr);
 
     UpdateResult result;
     error_reporter.FetchErrors(&result.errors);
@@ -544,6 +560,8 @@ UpdateResult Update(Modules* modules, UpdateParams params) {
             .tokens = std::move(tokens),
             .utf16_index = UTF16Index(content),
         };
+    } else {
+        modules->erase(params.file);
     }
 
     return result;
