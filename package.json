@@ -21,7 +21,7 @@
         "url": "https://github.com/seven332/vscode-sksl/issues"
     },
     "main": "./build/index.js",
-    "icon": "icon.png",
+    "icon": "./resources/icon.png",
     "engines": {
         "vscode": "^1.77.0"
     },
@@ -42,8 +42,8 @@
                 ],
                 "configuration": "./build/language.json",
                 "icon": {
-                    "light": "sksl-light.png",
-                    "dark": "sksl-dark.png"
+                    "light": "./resources/sksl-light.png",
+                    "dark": "./resources/sksl-dark.png"
                 }
             }
         ],
@@ -52,6 +52,24 @@
                 "language": "sksl",
                 "scopeName": "source.sksl",
                 "path": "./build/grammar.json"
+            }
+        ],
+        "walkthroughs": [
+            {
+                "id": "skslWelcome",
+                "title": "Get Started with SkSL",
+                "description": "Enable Code IntelliSense for SkSL",
+                "steps": [
+                    {
+                        "id": "sksl.setKind",
+                        "title": "Set the kind of SkSL",
+                        "description": "The kind of SkSL must be presented in source code. It could be `shader`, `colorfilter`, `blender`, `meshfrag` or `meshvert`.",
+                        "media": {
+                            "svg": "./resources/walkthrough-set-kind.svg",
+                            "altText": "SkSL kind"
+                        }
+                    }
+                ]
             }
         ]
     },

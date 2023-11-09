@@ -17,7 +17,7 @@ half4 main(float2 coord) {
 }
 ```
 
-It could be `shader`, `colorfilter`, `meshfrag` or `meshvert`.
+It could be `shader`, `colorfilter`, `blender`, `meshfrag` or `meshvert`.
 
 ## Features
 
