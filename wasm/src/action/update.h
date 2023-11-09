@@ -20,11 +20,11 @@ struct UpdateParams {
 
 struct UpdateResult {
     bool succeed = false;
-    std::vector<SkSLError> errors;
+    std::vector<SkSLDiagnostic> diagnostics;
 
     friend void Write(std::vector<std::byte>* bytes, const UpdateResult& value) {
         Write(bytes, value.succeed);
-        Write(bytes, value.errors);
+        Write(bytes, value.diagnostics);
     }
 };
 

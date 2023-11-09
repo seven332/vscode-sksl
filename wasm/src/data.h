@@ -60,13 +60,20 @@ struct SkSLRange {
     static constexpr std::uint32_t kMax = std::numeric_limits<std::uint32_t>::max();
 };
 
-struct SkSLError {
+struct SkSLDiagnostic {
+    enum class Severity : int {
+        kError = 1,
+        kWarning = 2,
+    };
+
     std::string message;
     SkSLRange range;
+    Severity severity;
 
-    friend void Write(std::vector<std::byte>* bytes, const SkSLError& value) {
+    friend void Write(std::vector<std::byte>* bytes, const SkSLDiagnostic& value) {
         Write(bytes, value.message);
         Write(bytes, value.range);
+        Write(bytes, static_cast<int>(value.severity));
     }
 };
 

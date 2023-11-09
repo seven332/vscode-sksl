@@ -31,9 +31,9 @@ export class SkSLServer {
             this.filePositions.delete(file)
         }
 
-        // Return error
-        return result.errors.map((error) =>
-            ls.Diagnostic.create(toRange(filePosition, error.range), error.message, ls.DiagnosticSeverity.Error),
+        // Return diagnostics
+        return result.diagnostics.map((diagnostic) =>
+            ls.Diagnostic.create(toRange(filePosition, diagnostic.range), diagnostic.message, diagnostic.severity),
         )
     }
 
@@ -263,14 +263,16 @@ const dummySkSLRange: SkSLRange = {
     end: 0,
 }
 
-interface SkSLError {
+interface SkSLDiagnostic {
     message: string
     range: SkSLRange
+    severity: ls.DiagnosticSeverity
 }
 
-const dummySkSLError: SkSLError = {
+const dummySkSLDiagnostic: SkSLDiagnostic = {
     message: '',
     range: dummySkSLRange,
+    severity: 1,
 }
 
 enum SkSLSymbolKind {
@@ -322,12 +324,12 @@ interface UpdateParams {
 
 interface UpdateResult {
     succeed: boolean
-    errors: SkSLError[]
+    diagnostics: SkSLDiagnostic[]
 }
 
 const dummyUpdateResult: UpdateResult = {
     succeed: false,
-    errors: [dummySkSLError],
+    diagnostics: [dummySkSLDiagnostic],
 }
 
 interface CloseParams {

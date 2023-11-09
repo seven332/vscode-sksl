@@ -55,26 +55,27 @@
 
 #pragma mark - Compile
 
-class SkSLErrorReporter : public SkSL::ErrorReporter {
+class SkSLDiagnosticReporter : public SkSL::ErrorReporter {
  public:
-    [[nodiscard]] const std::vector<SkSLError>& GetErrors() const {
-        return errors_;
+    [[nodiscard]] const std::vector<SkSLDiagnostic>& GetErrors() const {
+        return diagnostics_;
     }
 
-    void FetchErrors(std::vector<SkSLError>* errors) {
-        *errors = std::move(errors_);
+    void FetchDiagnostics(std::vector<SkSLDiagnostic>* diagnostics) {
+        *diagnostics = std::move(diagnostics_);
     }
 
  protected:
     void handleError(std::string_view msg, SkSL::Position position) override {
-        errors_.push_back({
+        diagnostics_.push_back({
             .message = std::string(msg),
             .range = position,
+            .severity = SkSLDiagnostic::Severity::kError,
         });
     }
 
  private:
-    std::vector<SkSLError> errors_;
+    std::vector<SkSLDiagnostic> diagnostics_;
 };
 
 std::optional<SkSL::ProgramKind> GetSkSLProgramKind(const std::string& content) {
@@ -107,7 +108,7 @@ static std::unique_ptr<SkSL::Program> CompileProgram(
     SkSL::ProgramKind kind,
     const char* module_name,
     std::string module_source,
-    SkSLErrorReporter* error_reporter
+    SkSLDiagnosticReporter* error_reporter
 ) {
     SkSL::ProgramSettings settings;
     settings.fUseMemoryPool = false;
@@ -528,14 +529,14 @@ UpdateResult Update(Modules* modules, UpdateParams params) {
 
     SkSL::Compiler compiler(SkSL::ShaderCapsFactory::Standalone());
 
-    SkSLErrorReporter error_reporter;
+    SkSLDiagnosticReporter error_reporter;
     compiler.context().fErrors = &error_reporter;
 
     std::string_view content = params.content;
     auto program = CompileProgram(&compiler, *kind, params.file.c_str(), std::move(params.content), nullptr);
 
     UpdateResult result;
-    error_reporter.FetchErrors(&result.errors);
+    error_reporter.FetchDiagnostics(&result.diagnostics);
     result.succeed = program != nullptr;
 
     if (result.succeed) {
