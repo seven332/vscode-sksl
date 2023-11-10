@@ -44,6 +44,10 @@ function bundle(debug: boolean) {
 
 function run(target: string) {
     switch (target) {
+        case 'prepare':
+            chdir('wasm')
+            exec('bash', 'prepare.sh')
+            break
         case 'build':
             chdir('.')
             exec('rm', '-rf', 'build')
