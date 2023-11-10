@@ -80,9 +80,17 @@ struct SkSLDiagnostic {
 };
 
 struct SkSLSymbol {
+    enum class Kind : int {
+        kVariable = 0,
+        kFunction = 1,
+        kField = 2,
+        kStruct = 3,
+        kInterface = 4,
+    };
+
     std::string name;
     std::string detail;
-    std::string kind;
+    Kind kind;
     SkSLRange range;
     SkSLRange selection_range;
     std::vector<SkSLSymbol> children;
@@ -90,7 +98,7 @@ struct SkSLSymbol {
     friend void Write(std::vector<std::byte>* bytes, const SkSLSymbol& value) {
         Write(bytes, value.name);
         Write(bytes, value.detail);
-        Write(bytes, value.kind);
+        Write(bytes, static_cast<int>(value.kind));
         Write(bytes, value.range);
         Write(bytes, value.selection_range);
         Write(bytes, value.children);

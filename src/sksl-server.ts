@@ -276,11 +276,11 @@ const dummySkSLDiagnostic: SkSLDiagnostic = {
 }
 
 enum SkSLSymbolKind {
-    kVariable = 'variable',
-    kFunction = 'function',
-    kField = 'field',
-    kStruct = 'struct',
-    kInterface = 'interface',
+    kVariable = 0,
+    kFunction = 1,
+    kField = 2,
+    kStruct = 3,
+    kInterface = 4,
 }
 
 interface SkSLSymbol {

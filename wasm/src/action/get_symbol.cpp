@@ -33,7 +33,7 @@ static std::vector<SkSLSymbol> ToFieldSymbols(const SkSL::Type& type, std::strin
         children.push_back({
             .name = std::string(field.fName),
             .detail = field.fType->description(),
-            .kind = "field",
+            .kind = SkSLSymbol::Kind::kField,
             .range = field.fPosition,
             .selection_range = Find(content, field.fPosition, field.fName),
         });
@@ -52,7 +52,7 @@ static void Parse(std::vector<SkSLSymbol>* symbols, const SkSL::FunctionDefiniti
     symbols->push_back({
         .name = std::string(name),
         .detail = element.declaration().description(),
-        .kind = "function",
+        .kind = SkSLSymbol::Kind::kFunction,
         .range = range,
         .selection_range = selection_range,
     });
@@ -68,7 +68,7 @@ static void Parse(std::vector<SkSLSymbol>* symbols, const SkSL::FunctionPrototyp
     symbols->push_back({
         .name = std::string(name),
         .detail = element.declaration().description(),
-        .kind = "function",
+        .kind = SkSLSymbol::Kind::kFunction,
         .range = range,
         .selection_range = selection_range,
     });
@@ -86,7 +86,7 @@ Parse(std::vector<SkSLSymbol>* symbols, const SkSL::GlobalVarDeclaration& elemen
     symbols->push_back({
         .name = std::string(name),
         .detail = element.varDeclaration().var()->type().description(),
-        .kind = "variable",
+        .kind = SkSLSymbol::Kind::kVariable,
         .range = range,
         .selection_range = selection_range,
     });
@@ -102,7 +102,7 @@ static void Parse(std::vector<SkSLSymbol>* symbols, const SkSL::InterfaceBlock& 
         symbols->push_back({
             .name = std::string(name),
             .detail = "interface",
-            .kind = "interface",
+            .kind = SkSLSymbol::Kind::kInterface,
             .range = range,
             .selection_range = selection_range,
             .children = ToFieldSymbols(element.var()->type(), content),
@@ -119,7 +119,7 @@ static void Parse(std::vector<SkSLSymbol>* symbols, const SkSL::InterfaceBlock& 
             symbols->push_back({
                 .name = std::string(name),
                 .detail = var->type().description(),
-                .kind = "variable",
+                .kind = SkSLSymbol::Kind::kVariable,
                 .range = range,
                 .selection_range = selection_range,
             });
@@ -137,7 +137,7 @@ static void Parse(std::vector<SkSLSymbol>* symbols, const SkSL::StructDefinition
     symbols->push_back({
         .name = std::string(name),
         .detail = "struct",
-        .kind = "struct",
+        .kind = SkSLSymbol::Kind::kStruct,
         .range = range,
         .selection_range = selection_range,
         .children = ToFieldSymbols(element.type(), content),
