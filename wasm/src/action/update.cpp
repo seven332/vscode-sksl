@@ -548,7 +548,7 @@ UpdateResult Update(Modules* modules, UpdateParams params) {
             .message =
                 "Set the kind of SkSL source to enable Code IntelliSense. // kind=(shader|colorfilter|blender|meshfrag|meshvert)",
             .range = {0, 0},
-            .severity = SkSLDiagnostic::Severity::kWarning
+            .severity = SkSLDiagnostic::Severity::kInformation
         });
         ToUTF16Range(&result.diagnostics, utf16_index);
         return result;
@@ -559,7 +559,8 @@ UpdateResult Update(Modules* modules, UpdateParams params) {
         modules->erase(params.file);
         UpdateResult result {.succeed = false};
         result.diagnostics.push_back({
-            .message = "Invalid SkSL source kind. Only shader, colorfilter, blender, meshfrag and meshvert are valid.",
+            .message =
+                "Invalid SkSL source kind. Only `shader`, `colorfilter`, `blender`, `meshfrag` and `meshvert` are valid.",
             .range = {kind->position, kind->position + kind->length},
             .severity = SkSLDiagnostic::Severity::kError
         });

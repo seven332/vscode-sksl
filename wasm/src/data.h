@@ -64,6 +64,8 @@ struct SkSLDiagnostic {
     enum class Severity : int {
         kError = 1,
         kWarning = 2,
+        kInformation = 3,
+        kHint = 4,
     };
 
     std::string message;
