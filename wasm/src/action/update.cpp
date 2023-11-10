@@ -78,16 +78,27 @@ class SkSLDiagnosticReporter : public SkSL::ErrorReporter {
     std::vector<SkSLDiagnostic> diagnostics_;
 };
 
-std::optional<SkSL::ProgramKind> GetSkSLProgramKind(const std::string& content) {
-    std::regex re(
-        R"(^[ \t]*\/\/[ /\t]*kind[ \t]*[:=][ \t]*(shader|colorfilter|blender|meshfrag|meshvert))",
-        std::regex_constants::ECMAScript
-    );
+struct Kind {
+    std::string str;
+    std::uint32_t position;
+    std::uint32_t length;
+};
+
+std::optional<Kind> GetKind(const std::string& content) {
+    std::regex re(R"(^[ \t]*\/\/[ /\t]*kind[ \t]*[:=][ \t]*(\w+))", std::regex_constants::ECMAScript);
     std::cmatch match;
     if (!std::regex_search(content.data(), match, re)) {
         return std::nullopt;
     }
-    switch (Hash(match.str(1).c_str())) {
+    return Kind {
+        .str = match.str(1),
+        .position = static_cast<std::uint32_t>(match.position(1)),
+        .length = static_cast<std::uint32_t>(match.length(1)),
+    };
+}
+
+std::optional<SkSL::ProgramKind> ToSkSLProgramKind(const std::string& kind) {
+    switch (Hash(kind.c_str())) {
     case Hash("shader"):
         return SkSL::ProgramKind::kRuntimeShader;
     case Hash("colorfilter"):
@@ -513,6 +524,13 @@ static void Parse(Context* context, const SkSL::Program* program) {
     }
 }
 
+static void ToUTF16Range(std::vector<SkSLDiagnostic>* diagnostics, const UTF16Index& utf16_index) {
+    for (auto& diagnostic : *diagnostics) {
+        diagnostic.range.start = utf16_index.ToUTF16(diagnostic.range.start);
+        diagnostic.range.end = utf16_index.ToUTF16(diagnostic.range.end);
+    }
+}
+
 UpdateResult Update(Modules* modules, UpdateParams params) {
     if (params.content.size() <= sizeof(std::string)) {
         // Avoid small string optimization
@@ -520,11 +538,33 @@ UpdateResult Update(Modules* modules, UpdateParams params) {
         return {.succeed = false};
     }
 
-    auto kind = GetSkSLProgramKind(params.content);
+    auto utf16_index = UTF16Index(params.content);
+
+    auto kind = GetKind(params.content);
     if (!kind) {
-        // TODO: no kind warning
         modules->erase(params.file);
-        return {.succeed = false};
+        UpdateResult result {.succeed = false};
+        result.diagnostics.push_back({
+            .message =
+                "Set the kind of SkSL source to enable Code IntelliSense. // kind=(shader|colorfilter|blender|meshfrag|meshvert)",
+            .range = {0, 0},
+            .severity = SkSLDiagnostic::Severity::kWarning
+        });
+        ToUTF16Range(&result.diagnostics, utf16_index);
+        return result;
+    }
+
+    auto sksl_kind = ToSkSLProgramKind(kind->str);
+    if (!sksl_kind) {
+        modules->erase(params.file);
+        UpdateResult result {.succeed = false};
+        result.diagnostics.push_back({
+            .message = "Invalid SkSL source kind. Only shader, colorfilter, blender, meshfrag and meshvert are valid.",
+            .range = {kind->position, kind->position + kind->length},
+            .severity = SkSLDiagnostic::Severity::kError
+        });
+        ToUTF16Range(&result.diagnostics, utf16_index);
+        return result;
     }
 
     SkSL::Compiler compiler(SkSL::ShaderCapsFactory::Standalone());
@@ -533,10 +573,11 @@ UpdateResult Update(Modules* modules, UpdateParams params) {
     compiler.context().fErrors = &error_reporter;
 
     std::string_view content = params.content;
-    auto program = CompileProgram(&compiler, *kind, params.file.c_str(), std::move(params.content), nullptr);
+    auto program = CompileProgram(&compiler, *sksl_kind, params.file.c_str(), std::move(params.content), nullptr);
 
     UpdateResult result;
     error_reporter.FetchDiagnostics(&result.diagnostics);
+    ToUTF16Range(&result.diagnostics, utf16_index);
     result.succeed = program != nullptr;
 
     if (result.succeed) {
@@ -559,7 +600,7 @@ UpdateResult Update(Modules* modules, UpdateParams params) {
             .content = content,
             .program = std::move(program),
             .tokens = std::move(tokens),
-            .utf16_index = UTF16Index(content),
+            .utf16_index = std::move(utf16_index),
         };
     } else {
         modules->erase(params.file);
