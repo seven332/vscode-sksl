@@ -44,7 +44,7 @@ struct SkSLRange {
         return os;
     }
 
-    friend std::size_t Read(std::span<std::byte> bytes, std::size_t offset, SkSLRange* value) {
+    friend std::size_t Read(std::span<const std::byte> bytes, std::size_t offset, SkSLRange* value) {
         std::size_t read = 0;
         read += Read(bytes, offset + read, reinterpret_cast<int*>(&value->start));
         read += Read(bytes, offset + read, reinterpret_cast<int*>(&value->end));

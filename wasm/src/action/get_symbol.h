@@ -8,7 +8,7 @@
 struct GetSymbolParams {
     std::string file;
 
-    friend std::size_t Read(std::span<std::byte> bytes, std::size_t offset, GetSymbolParams* value) {
+    friend std::size_t Read(std::span<const std::byte> bytes, std::size_t offset, GetSymbolParams* value) {
         std::size_t read = 0;
         read += Read(bytes, offset + read, &value->file);
         return read;

@@ -8,7 +8,7 @@
 struct FormatParams {
     std::string file;
 
-    friend std::size_t Read(std::span<std::byte> bytes, std::size_t offset, FormatParams* value) {
+    friend std::size_t Read(std::span<const std::byte> bytes, std::size_t offset, FormatParams* value) {
         std::size_t read = 0;
         read += Read(bytes, offset + read, &value->file);
         return read;

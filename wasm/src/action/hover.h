@@ -11,7 +11,7 @@ struct HoverParams {
     std::string file;
     int position;
 
-    friend std::size_t Read(std::span<std::byte> bytes, std::size_t offset, HoverParams* value) {
+    friend std::size_t Read(std::span<const std::byte> bytes, std::size_t offset, HoverParams* value) {
         std::size_t read = 0;
         read += Read(bytes, offset + read, &value->file);
         read += Read(bytes, offset + read, &value->position);
