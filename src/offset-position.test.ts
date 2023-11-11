@@ -1,10 +1,10 @@
-import { FilePosition } from './file-position'
+import { OffsetPosition } from './offset-position'
 import * as ls from 'vscode-languageserver/node'
 
-describe('FilePosition', () => {
+describe('OffsetPosition', () => {
     describe('getPosition', () => {
         it('normal', () => {
-            const fp = new FilePosition('abc\nbcd')
+            const fp = new OffsetPosition('abc\nbcd')
             expect(fp.getPosition(0)).toStrictEqual(ls.Position.create(0, 0))
             expect(fp.getPosition(1)).toStrictEqual(ls.Position.create(0, 1))
             expect(fp.getPosition(2)).toStrictEqual(ls.Position.create(0, 2))
@@ -17,7 +17,7 @@ describe('FilePosition', () => {
         })
 
         it('first break line', () => {
-            const fp = new FilePosition('\nabc')
+            const fp = new OffsetPosition('\nabc')
             expect(fp.getPosition(0)).toStrictEqual(ls.Position.create(0, 0))
             expect(fp.getPosition(1)).toStrictEqual(ls.Position.create(1, 0))
             expect(fp.getPosition(2)).toStrictEqual(ls.Position.create(1, 1))
@@ -26,7 +26,7 @@ describe('FilePosition', () => {
         })
 
         it('break', () => {
-            const fp = new FilePosition('\r\r\r\n\n\n\r\n\r\n\n\r\n\r')
+            const fp = new OffsetPosition('\r\r\r\n\n\n\r\n\r\n\n\r\n\r')
             expect(fp.getPosition(0)).toStrictEqual(ls.Position.create(0, 0))
             expect(fp.getPosition(1)).toStrictEqual(ls.Position.create(1, 0))
             expect(fp.getPosition(2)).toStrictEqual(ls.Position.create(2, 0))
@@ -41,7 +41,7 @@ describe('FilePosition', () => {
 
     describe('getOffset', () => {
         it('normal', () => {
-            const fp = new FilePosition('abc\nbcd')
+            const fp = new OffsetPosition('abc\nbcd')
             expect(fp.getOffset(ls.Position.create(0, 0))).toBe(0)
             expect(fp.getOffset(ls.Position.create(0, 1))).toBe(1)
             expect(fp.getOffset(ls.Position.create(0, 2))).toBe(2)

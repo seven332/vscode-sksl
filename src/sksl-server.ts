@@ -1,4 +1,4 @@
-import { FilePosition } from './file-position'
+import { OffsetPosition } from './offset-position'
 import { URI } from 'vscode-uri'
 import createSkSLWasm, { SkSLWasm } from './sksl-wasm'
 import * as ls from 'vscode-languageserver/node'
@@ -21,7 +21,7 @@ export class SkSLServer {
         this.wasm._Update()
         const result = this.getResult<UpdateResult>(dummyUpdateResult)
 
-        const filePosition = new FilePosition(content)
+        const filePosition = new OffsetPosition(content)
 
         if (result.succeed) {
             // Set new file position
@@ -235,7 +235,7 @@ export class SkSLServer {
     }
 
     private files = new Map<string, Set<string>>()
-    private filePositions = new Map<string, FilePosition>()
+    private filePositions = new Map<string, OffsetPosition>()
 
     private constructor(private wasm: SkSLWasm) {}
 
@@ -415,10 +415,10 @@ const dummyDefinitionResult: DefinitionResult = {
     range: dummySkSLRange,
 }
 
-function toRange(filePosition: FilePosition, range: SkSLRange): ls.Range {
+function toRange(filePosition: OffsetPosition, range: SkSLRange): ls.Range {
     return ls.Range.create(filePosition.getPosition(range.start), filePosition.getPosition(range.end))
 }
 
-function toSkSLRange(filePosition: FilePosition, range: ls.Range): SkSLRange {
+function toSkSLRange(filePosition: OffsetPosition, range: ls.Range): SkSLRange {
     return { start: filePosition.getOffset(range.start), end: filePosition.getOffset(range.end) }
 }

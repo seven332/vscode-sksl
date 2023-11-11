@@ -1,7 +1,7 @@
 import * as ls from 'vscode-languageserver/node'
 import { findLastLE } from './binary-search'
 
-export class FilePosition {
+export class OffsetPosition {
     public constructor(content: string) {
         if (content.length <= 0) {
             return
