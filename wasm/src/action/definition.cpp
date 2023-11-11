@@ -18,21 +18,18 @@ DefinitionResult Definition(Modules* modules, const DefinitionParams& params) {
         return result;
     }
 
-    // Convert position to utf-8
-    auto position = iter->second.utf16_index.ToUTF8(params.position);
-
     // Find the first token that (position < token.range.end) is true
     auto i = std::upper_bound(
         iter->second.tokens.begin(),
         iter->second.tokens.end(),
-        position,
+        params.position,
         [](std::uint16_t position, const Token& token) { return position < token.range.end; }
     );
     if (i == iter->second.tokens.end()) {
         return result;
     }
     const auto& token = *i;
-    if (token.range.start > position) {
+    if (token.range.start > params.position) {
         return result;
     }
     if (!token.is_reference) {
@@ -57,12 +54,6 @@ DefinitionResult Definition(Modules* modules, const DefinitionParams& params) {
         },
         token.value
     );
-
-    // Convert result range to utf-16
-    if (result.found) {
-        result.range.start = iter->second.utf16_index.ToUTF16(result.range.start);
-        result.range.end = iter->second.utf16_index.ToUTF16(result.range.end);
-    }
 
     return result;
 }

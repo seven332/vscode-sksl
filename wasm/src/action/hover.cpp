@@ -112,21 +112,18 @@ HoverResult Hover(Modules* modules, const HoverParams& params) {
         return result;
     }
 
-    // Convert position to utf-8
-    auto position = iter->second.utf16_index.ToUTF8(params.position);
-
     // Find the first token that (position < token.range.end) is true
     auto i = std::upper_bound(
         iter->second.tokens.begin(),
         iter->second.tokens.end(),
-        position,
+        params.position,
         [](std::uint16_t position, const Token& token) { return position < token.range.end; }
     );
     if (i == iter->second.tokens.end()) {
         return result;
     }
     const auto& token = *i;
-    if (token.range.start > position) {
+    if (token.range.start > params.position) {
         return result;
     }
 
@@ -217,8 +214,7 @@ HoverResult Hover(Modules* modules, const HoverParams& params) {
     if (doc) {
         result.found = true;
         result.markdown = true;
-        result.range.start = iter->second.utf16_index.ToUTF16(token.range.start);
-        result.range.end = iter->second.utf16_index.ToUTF16(token.range.end);
+        result.range = token.range;
         result.content += "### " + doc->type + "`" + doc->name + "`";
         if (!doc->content.empty()) {
             result.content += "\n\n---\n\n`" + doc->content + "`";

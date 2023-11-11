@@ -51,7 +51,6 @@
 #include "hash.h"
 #include "lexer.h"
 #include "token.h"
-#include "utf16_index.h"
 
 #pragma mark - Compile
 
@@ -524,21 +523,12 @@ static void Parse(Context* context, const SkSL::Program* program) {
     }
 }
 
-static void ToUTF16Range(std::vector<SkSLDiagnostic>* diagnostics, const UTF16Index& utf16_index) {
-    for (auto& diagnostic : *diagnostics) {
-        diagnostic.range.start = utf16_index.ToUTF16(diagnostic.range.start);
-        diagnostic.range.end = utf16_index.ToUTF16(diagnostic.range.end);
-    }
-}
-
 UpdateResult Update(Modules* modules, UpdateParams params) {
     if (params.content.size() <= sizeof(std::string)) {
         // Avoid small string optimization
         modules->erase(params.file);
         return {.succeed = false};
     }
-
-    auto utf16_index = UTF16Index(params.content);
 
     auto kind = GetKind(params.content);
     if (!kind) {
@@ -550,7 +540,6 @@ UpdateResult Update(Modules* modules, UpdateParams params) {
             .range = {0, 0},
             .severity = SkSLDiagnostic::Severity::kInformation
         });
-        ToUTF16Range(&result.diagnostics, utf16_index);
         return result;
     }
 
@@ -564,7 +553,6 @@ UpdateResult Update(Modules* modules, UpdateParams params) {
             .range = {kind->position, kind->position + kind->length},
             .severity = SkSLDiagnostic::Severity::kError
         });
-        ToUTF16Range(&result.diagnostics, utf16_index);
         return result;
     }
 
@@ -578,7 +566,6 @@ UpdateResult Update(Modules* modules, UpdateParams params) {
 
     UpdateResult result;
     error_reporter.FetchDiagnostics(&result.diagnostics);
-    ToUTF16Range(&result.diagnostics, utf16_index);
     result.succeed = program != nullptr;
 
     if (result.succeed) {
@@ -601,7 +588,6 @@ UpdateResult Update(Modules* modules, UpdateParams params) {
             .content = content,
             .program = std::move(program),
             .tokens = std::move(tokens),
-            .utf16_index = std::move(utf16_index),
         };
     } else {
         modules->erase(params.file);

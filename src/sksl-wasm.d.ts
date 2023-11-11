@@ -5,6 +5,7 @@ export interface SkSLWasm extends EmscriptenModule {
     _GetParamsPtr(): number
     _GetResultPtr(): number
     _GetResultSize(): number
+    _ToUTFOffsets(): void
     _Update(): void
     _Close(): void
     _GetSymbol(): void

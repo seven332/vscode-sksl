@@ -89,13 +89,6 @@ static void Convert(std::vector<SkSLToken>* result, const Token& token) {
     });
 }
 
-static void ToUTF16Range(std::vector<SkSLToken>* result, const UTF16Index& utf16_index) {
-    for (auto& token : *result) {
-        token.range.start = utf16_index.ToUTF16(token.range.start);
-        token.range.end = utf16_index.ToUTF16(token.range.end);
-    }
-}
-
 GetTokenResult GetToken(Modules* modules, const GetTokenParams& params) {  // NOLINT
     GetTokenResult result;
 
@@ -108,9 +101,6 @@ GetTokenResult GetToken(Modules* modules, const GetTokenParams& params) {  // NO
         Convert(&result.tokens, token);
     }
 
-    // Convert range to utf-16
-    ToUTF16Range(&result.tokens, iter->second.utf16_index);
-
     return result;
 }
 
@@ -122,25 +112,17 @@ GetTokenRangeResult GetTokenRange(Modules* modules, const GetTokenRangeParams& p
         return result;
     }
 
-    // Convert range to utf-8
-    auto range = params.range;
-    range.start = iter->second.utf16_index.ToUTF8(range.start);
-    range.end = iter->second.utf16_index.ToUTF8(range.end);
-
     // Find the first token that (range.start < token.range.end) is true
     auto i = std::upper_bound(
         iter->second.tokens.begin(),
         iter->second.tokens.end(),
-        range,
+        params.range,
         [](const SkSLRange& range, const Token& token) { return range.start < token.range.end; }
     );
 
-    for (; i != iter->second.tokens.end() && i->range.Intersects(range); ++i) {
+    for (; i != iter->second.tokens.end() && i->range.Intersects(params.range); ++i) {
         Convert(&result.tokens, *i);
     }
-
-    // Convert range to utf-16
-    ToUTF16Range(&result.tokens, iter->second.utf16_index);
 
     return result;
 }

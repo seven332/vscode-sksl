@@ -5,7 +5,7 @@ add_library(sksl-wasm-lib STATIC
     lexer.cpp
     formatter.cpp
     simple_codec.cpp
-    utf16_index.cpp
+    utf_offset.cpp
     action/update.cpp
     action/close.cpp
     action/format.cpp
@@ -24,7 +24,7 @@ target_link_options(sksl-wasm PRIVATE
     -sENVIRONMENT=node
     -sMODULARIZE
     -sEXPORTED_RUNTIME_METHODS=ccall
-    -sEXPORTED_FUNCTIONS=_SetParamsSize,_GetParamsPtr,_GetResultPtr,_GetResultSize,_Update,_Close,_GetSymbol,_Format,_GetToken,_GetTokenRange,_Hover,_Definition
+    -sEXPORTED_FUNCTIONS=_ToUTFOffsets,_SetParamsSize,_GetParamsPtr,_GetResultPtr,_GetResultSize,_Update,_Close,_GetSymbol,_Format,_GetToken,_GetTokenRange,_Hover,_Definition
     -sALLOW_MEMORY_GROWTH=1
     -sINITIAL_MEMORY=32MB
     -sDISABLE_EXCEPTION_CATCHING=1
@@ -34,7 +34,7 @@ target_link_options(sksl-wasm PRIVATE
 add_executable(sksl-wasm-lib-test
     formatter_test.cpp
     simple_codec_test.cpp
-    utf16_index_test.cpp
+    utf_offset_test.cpp
 )
 target_link_libraries(sksl-wasm-lib-test PRIVATE sksl-wasm-lib gmock_main)
 enable_testing()

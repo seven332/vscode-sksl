@@ -1,9 +1,10 @@
-import { OffsetPosition } from './offset-position'
 import { URI } from 'vscode-uri'
 import createSkSLWasm, { SkSLWasm } from './sksl-wasm'
 import * as ls from 'vscode-languageserver/node'
 import { decode, encode } from './simple-codec'
 import { uinteger } from 'vscode-languageclient'
+import { FilePosition } from './file-position'
+import { UTFOffset, dummyUTFOffset } from './utf-offset-converter'
 
 export class SkSLServer {
     public static async create(path: string): Promise<SkSLServer> {
@@ -21,7 +22,7 @@ export class SkSLServer {
         this.wasm._Update()
         const result = this.getResult<UpdateResult>(dummyUpdateResult)
 
-        const filePosition = new OffsetPosition(content)
+        const filePosition = this.toFilePosition(content)
 
         if (result.succeed) {
             // Set new file position
@@ -198,7 +199,7 @@ export class SkSLServer {
         }
 
         // Call wasm
-        this.setParams<HoverParams>({ file, position: filePosition.getOffset(position) })
+        this.setParams<HoverParams>({ file, position: filePosition.toOffset(position) })
         this.wasm._Hover()
         const result = this.getResult<HoverResult>(dummyHoverResult)
 
@@ -223,7 +224,7 @@ export class SkSLServer {
         }
 
         // Call wasm
-        this.setParams<DefinitionParams>({ file, position: filePosition.getOffset(position) })
+        this.setParams<DefinitionParams>({ file, position: filePosition.toOffset(position) })
         this.wasm._Definition()
         const result = this.getResult<DefinitionResult>(dummyDefinitionResult)
 
@@ -235,7 +236,7 @@ export class SkSLServer {
     }
 
     private files = new Map<string, Set<string>>()
-    private filePositions = new Map<string, OffsetPosition>()
+    private filePositions = new Map<string, FilePosition>()
 
     private constructor(private wasm: SkSLWasm) {}
 
@@ -250,6 +251,13 @@ export class SkSLServer {
         const size = this.wasm._GetResultSize()
         const bytes = this.wasm.HEAPU8.subarray(ptr, ptr + size)
         return decode(bytes, dummy)
+    }
+
+    private toFilePosition(content: string): FilePosition {
+        this.setParams<string>(content)
+        this.wasm._ToUTFOffsets()
+        const offsets = this.getResult<UTFOffset[]>([dummyUTFOffset])
+        return new FilePosition(content, offsets)
     }
 }
 
@@ -415,10 +423,10 @@ const dummyDefinitionResult: DefinitionResult = {
     range: dummySkSLRange,
 }
 
-function toRange(filePosition: OffsetPosition, range: SkSLRange): ls.Range {
-    return ls.Range.create(filePosition.getPosition(range.start), filePosition.getPosition(range.end))
+function toRange(filePosition: FilePosition, range: SkSLRange): ls.Range {
+    return ls.Range.create(filePosition.toPosition(range.start), filePosition.toPosition(range.end))
 }
 
-function toSkSLRange(filePosition: OffsetPosition, range: ls.Range): SkSLRange {
-    return { start: filePosition.getOffset(range.start), end: filePosition.getOffset(range.end) }
+function toSkSLRange(filePosition: FilePosition, range: ls.Range): SkSLRange {
+    return { start: filePosition.toOffset(range.start), end: filePosition.toOffset(range.end) }
 }

@@ -1,7 +1,7 @@
 import * as ls from 'vscode-languageserver/node'
 import { findLastLE } from './binary-search'
 
-export class OffsetPosition {
+export class OffsetPositionConverter {
     public constructor(content: string) {
         if (content.length <= 0) {
             return
@@ -32,7 +32,7 @@ export class OffsetPosition {
         return this.lineOffsets.length
     }
 
-    public getPosition(offset: number): ls.Position {
+    public toPosition(offset: number): ls.Position {
         const index = findLastLE(this.lineOffsets, offset, (value, element) => value < element)
         if (index == -1) {
             return ls.Position.create(0, offset)
@@ -41,7 +41,7 @@ export class OffsetPosition {
         return ls.Position.create(index, offset - position)
     }
 
-    public getOffset(position: ls.Position): number {
+    public toOffset(position: ls.Position): number {
         const line = Math.min(position.line, this.lineOffsets.length - 1)
         return this.lineOffsets[line] + position.character
     }

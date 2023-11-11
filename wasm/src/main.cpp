@@ -13,6 +13,7 @@
 #include "action/hover.h"
 #include "action/update.h"
 #include "module.h"
+#include "utf_offset.h"
 
 static Modules modules;
 static std::vector<std::byte> params_bytes;
@@ -34,6 +35,14 @@ void* GetResultPtr() {
 
 std::size_t GetResultSize() {
     return result_bytes.size();
+}
+
+void ToUTFOffsets() {
+    std::string text;
+    Read(params_bytes, 0, &text);
+    auto offsets = ToUTFOffsets(text);
+    result_bytes.clear();
+    Write(&result_bytes, offsets);
 }
 
 #define ACTION(Type, Name)                               \
