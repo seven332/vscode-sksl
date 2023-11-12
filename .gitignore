@@ -1,5 +1,6 @@
 node_modules
 build
+build_integration_test
 compile_commands.json
 .cache
 *.log
@@ -13,3 +14,4 @@ wasm/build
 wasm/build_test
 wasm/.clangd
 .vscode/settings.json
+.vscode-test

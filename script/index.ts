@@ -31,15 +31,15 @@ function exec(cmd: string, ...args: string[]) {
     }
 }
 
-function bundle(debug: boolean) {
-    const environment = debug ? 'development' : 'production'
+enum RollupKind {
+    Production = 'production',
+    Development = 'development',
+    IntegrationTest = 'integration-test',
+}
+
+function rollup(kind: RollupKind) {
     chdir('.')
-    exec(
-        npx('rollup'),
-        '--config',
-        '--configPlugin=typescript={module:"esnext",exclude:"wasm/**/*.ts"}',
-        `--environment=NODE_ENV:${environment}`,
-    )
+    exec(npx('rollup'), '--config', '--configPlugin=typescript', `--environment=NODE_ENV:${kind}`)
 }
 
 function run(target: string) {
@@ -54,17 +54,25 @@ function run(target: string) {
             chdir('wasm')
             exec('bash', 'build.sh')
             exec('cp', 'build/src/sksl-wasm.js', '../src')
-            bundle(false)
+            rollup(RollupKind.Production)
             chdir('script')
             exec(npx('ts-node'), 'syntax.ts', '../build')
             chdir('wasm')
             exec('cp', 'build/src/sksl-wasm.wasm', '../build')
             break
         case 'test':
+            // js test
             chdir('.')
             exec(npx('jest'))
+            // wasm test
             chdir('wasm')
             exec('bash', 'test.sh')
+            // integration test
+            chdir('.')
+            exec('rm', '-rf', 'build_integration_test')
+            rollup(RollupKind.IntegrationTest)
+            chdir('.')
+            exec(npx('vscode-test'))
             break
         case 'format':
             exec(npx('prettier'), '--write', '.')

@@ -1,8 +1,9 @@
 {
     "compilerOptions": {
         "target": "es2021",
-        "module": "commonjs",
+        "esModuleInterop": true,
         "moduleResolution": "node",
         "strictNullChecks": true
-    }
+    },
+    "include": ["src/**/*.ts", "integration-test/**/*.ts", "rollup.config.ts"]
 }

@@ -30,8 +30,8 @@ jobs:
             - run: em++ -v
 
             - run: npm ci
-            - run: npm run test
             - run: npm run build
+            - run: xvfb-run -a npm run test
             - run: npm run package
 
             - uses: actions/upload-artifact@v3
