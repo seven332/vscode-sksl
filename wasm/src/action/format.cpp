@@ -6,7 +6,7 @@ FormatResult Format(Modules* modules, const FormatParams& params) {
     FormatResult result;
 
     auto iter = modules->find(params.file);
-    if (iter == modules->end()) {
+    if (iter == modules->end() || !iter->second.document) {
         return result;
     }
 

@@ -93,11 +93,11 @@ GetTokenResult GetToken(Modules* modules, const GetTokenParams& params) {  // NO
     GetTokenResult result;
 
     auto iter = modules->find(params.file);
-    if (iter == modules->end()) {
+    if (iter == modules->end() || !iter->second.document) {
         return result;
     }
 
-    for (const auto& token : iter->second.tokens) {
+    for (const auto& token : iter->second.document->tokens) {
         Convert(&result.tokens, token);
     }
 
@@ -108,19 +108,19 @@ GetTokenRangeResult GetTokenRange(Modules* modules, const GetTokenRangeParams& p
     GetTokenRangeResult result;
 
     auto iter = modules->find(params.file);
-    if (iter == modules->end()) {
+    if (iter == modules->end() || !iter->second.document) {
         return result;
     }
 
     // Find the first token that (range.start < token.range.end) is true
     auto i = std::upper_bound(
-        iter->second.tokens.begin(),
-        iter->second.tokens.end(),
+        iter->second.document->tokens.begin(),
+        iter->second.document->tokens.end(),
         params.range,
         [](const SkSLRange& range, const Token& token) { return range.start < token.range.end; }
     );
 
-    for (; i != iter->second.tokens.end() && i->range.Intersects(params.range); ++i) {
+    for (; i != iter->second.document->tokens.end() && i->range.Intersects(params.range); ++i) {
         Convert(&result.tokens, *i);
     }
 

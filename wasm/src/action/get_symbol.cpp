@@ -148,11 +148,11 @@ GetSymbolResult GetSymbol(Modules* modules, const GetSymbolParams& params) {
     GetSymbolResult result;
 
     auto iter = modules->find(params.file);
-    if (iter == modules->end()) {
+    if (iter == modules->end() || !iter->second.document) {
         return result;
     }
 
-    for (const auto& element : iter->second.program->fOwnedElements) {
+    for (const auto& element : iter->second.document->program->fOwnedElements) {
         switch (element->kind()) {
         case SkSL::ProgramElementKind::kExtension: {
             auto& extension = element->as<SkSL::Extension>();

@@ -50,6 +50,7 @@
 #include "data.h"
 #include "hash.h"
 #include "lexer.h"
+#include "module.h"
 #include "token.h"
 
 #pragma mark - Compile
@@ -586,11 +587,17 @@ UpdateResult Update(Modules* modules, UpdateParams params) {
 
         (*modules)[std::move(params.file)] = {
             .content = content,
-            .program = std::move(program),
-            .tokens = std::move(tokens),
+            .document =
+                Document {
+                          .program = std::move(program),
+                          .tokens = std::move(tokens),
+                          },
         };
     } else {
-        modules->erase(params.file);
+        (*modules)[std::move(params.file)] = {
+            .content = content,
+            .document = std::nullopt,
+        };
     }
 
     return result;

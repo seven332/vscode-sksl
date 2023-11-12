@@ -14,18 +14,18 @@ DefinitionResult Definition(Modules* modules, const DefinitionParams& params) {
     DefinitionResult result;
 
     auto iter = modules->find(params.file);
-    if (iter == modules->end()) {
+    if (iter == modules->end() || !iter->second.document) {
         return result;
     }
 
     // Find the first token that (position < token.range.end) is true
     auto i = std::upper_bound(
-        iter->second.tokens.begin(),
-        iter->second.tokens.end(),
+        iter->second.document->tokens.begin(),
+        iter->second.document->tokens.end(),
         params.position,
         [](std::uint16_t position, const Token& token) { return position < token.range.end; }
     );
-    if (i == iter->second.tokens.end()) {
+    if (i == iter->second.document->tokens.end()) {
         return result;
     }
     const auto& token = *i;
