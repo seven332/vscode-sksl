@@ -51,7 +51,13 @@ documents.onDidChangeContent((event) => {
 })
 
 documents.onDidClose((event) => {
-    server?.close(event.document.uri)
+    const diagnostics = server?.close(event.document.uri)
+    if (diagnostics) {
+        connection.sendDiagnostics({
+            uri: event.document.uri,
+            diagnostics,
+        })
+    }
 })
 
 connection.onDocumentSymbol((params) => {

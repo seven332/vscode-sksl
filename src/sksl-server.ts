@@ -31,7 +31,7 @@ export class SkSLServer {
         )
     }
 
-    public close(uri: string) {
+    public close(uri: string): ls.Diagnostic[] | undefined {
         const file = URI.parse(uri).fsPath
         const uris = this.files.get(file)
         if (uris) {
@@ -55,6 +55,7 @@ export class SkSLServer {
             // Delete document
             this.documents.delete(file)
         }
+        return []
     }
 
     public getSymbol(uri: string): ls.DocumentSymbol[] {
