@@ -14,6 +14,16 @@ suite('Diagnostics', () => {
             },
         ])
     })
+
+    test('error diagnostics', async () => {
+        await testDiagnostics('error.sksl', [
+            {
+                message: "'main' must return: 'vec4', 'float4', or 'half4'",
+                range: toRange(3, 0, 3, 11),
+                severity: vscode.DiagnosticSeverity.Error,
+            },
+        ])
+    })
 })
 
 async function testDiagnostics(name: string, expected: vscode.Diagnostic[]) {

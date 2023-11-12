@@ -10,7 +10,8 @@ export class OffsetPositionConverter {
 
         let index = 0
         let prev = ' '
-        for (const c of content) {
+        for (let i = 0; i < content.length; ++i) {
+            const c = content.charAt(i)
             switch (c) {
                 case '\n':
                     if (prev == '\n') {
