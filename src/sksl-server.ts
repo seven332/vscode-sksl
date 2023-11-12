@@ -23,14 +23,7 @@ export class SkSLServer {
         const result = this.getResult<UpdateResult>(dummyUpdateResult)
 
         const filePosition = this.toFilePosition(content)
-
-        if (result.succeed) {
-            // Set new file position
-            this.filePositions.set(file, filePosition)
-        } else {
-            // Delete old file position
-            this.filePositions.delete(file)
-        }
+        this.documents.set(file, { recognized: result.succeed, filePosition })
 
         // Return diagnostics
         return result.diagnostics.map((diagnostic) =>
@@ -53,23 +46,21 @@ export class SkSLServer {
             return
         }
 
-        if (!this.filePositions.has(file)) {
-            // This file is not recognized
-            return
+        const document = this.documents.get(file)
+        if (document) {
+            // Call wasm
+            this.setParams<CloseParams>({ file })
+            this.wasm._Close()
+
+            // Delete document
+            this.documents.delete(file)
         }
-
-        // Call wasm
-        this.setParams<CloseParams>({ file })
-        this.wasm._Close()
-
-        // Delete old file position
-        this.filePositions.delete(file)
     }
 
     public getSymbol(uri: string): ls.DocumentSymbol[] {
         const file = URI.parse(uri).fsPath
-        const filePosition = this.filePositions.get(file)
-        if (!filePosition) {
+        const document = this.documents.get(file)
+        if (!document || !document.recognized) {
             return []
         }
 
@@ -99,8 +90,8 @@ export class SkSLServer {
                 symbol.name,
                 symbol.detail,
                 toKind(symbol.kind),
-                toRange(filePosition, symbol.range),
-                toRange(filePosition, symbol.selectionRange),
+                toRange(document.filePosition, symbol.range),
+                toRange(document.filePosition, symbol.selectionRange),
                 symbol.children.map((child) => toSymbol(child)),
             )
 
@@ -109,8 +100,8 @@ export class SkSLServer {
 
     public format(uri: string): ls.TextEdit[] {
         const file = URI.parse(uri).fsPath
-        const filePosition = this.filePositions.get(file)
-        if (!filePosition) {
+        const document = this.documents.get(file)
+        if (!document || !document.recognized) {
             return []
         }
 
@@ -125,7 +116,7 @@ export class SkSLServer {
 
         return [
             ls.TextEdit.replace(
-                ls.Range.create(ls.Position.create(0, 0), ls.Position.create(filePosition.getLines(), 0)),
+                ls.Range.create(ls.Position.create(0, 0), ls.Position.create(document.filePosition.getLines(), 0)),
                 result.newContent,
             ),
         ]
@@ -135,8 +126,8 @@ export class SkSLServer {
         const builder = new ls.SemanticTokensBuilder()
 
         const file = URI.parse(uri).fsPath
-        const filePosition = this.filePositions.get(file)
-        if (!filePosition) {
+        const document = this.documents.get(file)
+        if (!document || !document.recognized) {
             return builder.build()
         }
 
@@ -146,7 +137,7 @@ export class SkSLServer {
         const result = this.getResult<GetTokenResult>(dummyGetTokenResult)
 
         for (const token of result.tokens) {
-            const range = toRange(filePosition, token.range)
+            const range = toRange(document.filePosition, token.range)
             if (range.start.line == range.end.line) {
                 builder.push(
                     range.start.line,
@@ -165,18 +156,18 @@ export class SkSLServer {
         const builder = new ls.SemanticTokensBuilder()
 
         const file = URI.parse(uri).fsPath
-        const filePosition = this.filePositions.get(file)
-        if (!filePosition) {
+        const document = this.documents.get(file)
+        if (!document || !document.recognized) {
             return builder.build()
         }
 
         // Call wasm
-        this.setParams<GetTokenRangeParams>({ file, range: toSkSLRange(filePosition, range) })
+        this.setParams<GetTokenRangeParams>({ file, range: toSkSLRange(document.filePosition, range) })
         this.wasm._GetTokenRange()
         const result = this.getResult<GetTokenRangeResult>(dummyGetTokenRangeResult)
 
         for (const token of result.tokens) {
-            const range = toRange(filePosition, token.range)
+            const range = toRange(document.filePosition, token.range)
             if (range.start.line == range.end.line) {
                 builder.push(
                     range.start.line,
@@ -193,13 +184,13 @@ export class SkSLServer {
 
     public hover(uri: string, position: ls.Position): ls.Hover | undefined {
         const file = URI.parse(uri).fsPath
-        const filePosition = this.filePositions.get(file)
-        if (!filePosition) {
+        const document = this.documents.get(file)
+        if (!document || !document.recognized) {
             return
         }
 
         // Call wasm
-        this.setParams<HoverParams>({ file, position: filePosition.toOffset(position) })
+        this.setParams<HoverParams>({ file, position: document.filePosition.toOffset(position) })
         this.wasm._Hover()
         const result = this.getResult<HoverResult>(dummyHoverResult)
 
@@ -212,19 +203,19 @@ export class SkSLServer {
                 kind: result.markdown ? ls.MarkupKind.Markdown : ls.MarkupKind.PlainText,
                 value: result.content,
             },
-            range: toRange(filePosition, result.range),
+            range: toRange(document.filePosition, result.range),
         }
     }
 
     public definition(uri: string, position: ls.Position): ls.Location | undefined {
         const file = URI.parse(uri).fsPath
-        const filePosition = this.filePositions.get(file)
-        if (!filePosition) {
+        const document = this.documents.get(file)
+        if (!document || !document.recognized) {
             return
         }
 
         // Call wasm
-        this.setParams<DefinitionParams>({ file, position: filePosition.toOffset(position) })
+        this.setParams<DefinitionParams>({ file, position: document.filePosition.toOffset(position) })
         this.wasm._Definition()
         const result = this.getResult<DefinitionResult>(dummyDefinitionResult)
 
@@ -232,11 +223,11 @@ export class SkSLServer {
             return
         }
 
-        return ls.Location.create(uri, toRange(filePosition, result.range))
+        return ls.Location.create(uri, toRange(document.filePosition, result.range))
     }
 
     private files = new Map<string, Set<string>>()
-    private filePositions = new Map<string, FilePosition>()
+    private documents = new Map<string, Document>()
 
     private constructor(private wasm: SkSLWasm) {}
 
@@ -259,6 +250,11 @@ export class SkSLServer {
         const offsets = this.getResult<UTFOffset[]>([dummyUTFOffset])
         return new FilePosition(content, offsets)
     }
+}
+
+interface Document {
+    recognized: boolean
+    filePosition: FilePosition
 }
 
 interface SkSLRange {
