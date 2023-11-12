@@ -13,6 +13,7 @@ add_library(sksl-wasm-lib STATIC
     action/get_token.cpp
     action/hover.cpp
     action/definition.cpp
+    action/completion.cpp
 )
 target_include_directories(sksl-wasm-lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(sksl-wasm-lib PUBLIC skia_sksl)
@@ -24,7 +25,7 @@ target_link_options(sksl-wasm PRIVATE
     -sENVIRONMENT=node
     -sMODULARIZE
     -sEXPORTED_RUNTIME_METHODS=ccall
-    -sEXPORTED_FUNCTIONS=_ToUTFOffsets,_SetParamsSize,_GetParamsPtr,_GetResultPtr,_GetResultSize,_Update,_Close,_GetSymbol,_Format,_GetToken,_GetTokenRange,_Hover,_Definition
+    -sEXPORTED_FUNCTIONS=_ToUTFOffsets,_SetParamsSize,_GetParamsPtr,_GetResultPtr,_GetResultSize,_Update,_Close,_GetSymbol,_Format,_GetToken,_GetTokenRange,_Hover,_Definition,_Completion
     -sALLOW_MEMORY_GROWTH=1
     -sINITIAL_MEMORY=32MB
     -sDISABLE_EXCEPTION_CATCHING=1

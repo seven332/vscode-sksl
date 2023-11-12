@@ -14,6 +14,7 @@ export interface SkSLWasm extends EmscriptenModule {
     _GetTokenRange(): void
     _Hover(): void
     _Definition(): void
+    _Completion(): void
 }
 
 export default function createSkSLWasm(moduleOverrides?: Partial<EmscriptenModule>): Promise<SkSLWasm>

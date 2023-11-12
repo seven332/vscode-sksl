@@ -108,18 +108,18 @@ HoverResult Hover(Modules* modules, const HoverParams& params) {
     result.found = false;
 
     auto iter = modules->find(params.file);
-    if (iter == modules->end() || !iter->second.document) {
+    if (iter == modules->end() || !iter->second.HasProgram()) {
         return result;
     }
 
     // Find the first token that (position < token.range.end) is true
     auto i = std::upper_bound(
-        iter->second.document->tokens.begin(),
-        iter->second.document->tokens.end(),
+        iter->second.GetTokens().begin(),
+        iter->second.GetTokens().end(),
         params.position,
         [](std::uint16_t position, const Token& token) { return position < token.range.end; }
     );
-    if (i == iter->second.document->tokens.end()) {
+    if (i == iter->second.GetTokens().end()) {
         return result;
     }
     const auto& token = *i;

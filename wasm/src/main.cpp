@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "action/close.h"
+#include "action/completion.h"
 #include "action/definition.h"
 #include "action/format.h"
 #include "action/get_symbol.h"
@@ -67,6 +68,7 @@ ACTION(GetToken, "get_token")
 ACTION(GetTokenRange, "get_token_range")
 ACTION(Hover, "hover")
 ACTION(Definition, "definition")
+ACTION(Completion, "completion")
 
 #undef ACTION
 }

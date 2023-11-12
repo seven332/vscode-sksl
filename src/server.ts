@@ -33,6 +33,9 @@ connection.onInitialize(async (params) => {
                 range: true,
                 full: true,
             },
+            completionProvider: {
+                triggerCharacters: [':', '='],
+            },
         },
     }
 })
@@ -73,6 +76,10 @@ connection.onHover((params) => {
 
 connection.onDefinition((params) => {
     return server?.definition(params.textDocument.uri, params.position)
+})
+
+connection.onCompletion((params) => {
+    return server?.completion(params.textDocument.uri, params.position)
 })
 
 documents.listen(connection)

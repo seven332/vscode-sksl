@@ -116,3 +116,17 @@ struct SkSLToken {
         Write(bytes, static_cast<int>(value.token_modifiers));
     }
 };
+
+struct SkSLCompletion {
+    enum class Kind : int {
+        kText = 1,
+    };
+
+    std::string label;
+    Kind kind;
+
+    friend void Write(std::vector<std::byte>* bytes, const SkSLCompletion& value) {
+        Write(bytes, value.label);
+        Write(bytes, static_cast<int>(value.kind));
+    }
+};

@@ -527,13 +527,13 @@ static void Parse(Context* context, const SkSL::Program* program) {
 UpdateResult Update(Modules* modules, UpdateParams params) {
     if (params.content.size() <= sizeof(std::string)) {
         // Avoid small string optimization
-        modules->erase(params.file);
+        (*modules)[std::move(params.file)] = Module(std::move(params.content));
         return {.succeed = false};
     }
 
     auto kind = GetKind(params.content);
     if (!kind) {
-        modules->erase(params.file);
+        (*modules)[std::move(params.file)] = Module(std::move(params.content));
         UpdateResult result {.succeed = false};
         result.diagnostics.push_back({
             .message =
@@ -546,7 +546,7 @@ UpdateResult Update(Modules* modules, UpdateParams params) {
 
     auto sksl_kind = ToSkSLProgramKind(kind->str);
     if (!sksl_kind) {
-        modules->erase(params.file);
+        (*modules)[std::move(params.file)] = Module(std::move(params.content));
         UpdateResult result {.succeed = false};
         result.diagnostics.push_back({
             .message =
@@ -562,6 +562,7 @@ UpdateResult Update(Modules* modules, UpdateParams params) {
     SkSLDiagnosticReporter error_reporter;
     compiler.context().fErrors = &error_reporter;
 
+    auto content_backup = params.content;
     std::string_view content = params.content;
     auto program = CompileProgram(&compiler, *sksl_kind, params.file.c_str(), std::move(params.content), nullptr);
 
@@ -584,20 +585,9 @@ UpdateResult Update(Modules* modules, UpdateParams params) {
             ),
             tokens.end()
         );
-
-        (*modules)[std::move(params.file)] = {
-            .content = content,
-            .document =
-                Document {
-                          .program = std::move(program),
-                          .tokens = std::move(tokens),
-                          },
-        };
+        (*modules)[std::move(params.file)] = Module(content, std::move(program), std::move(tokens));
     } else {
-        (*modules)[std::move(params.file)] = {
-            .content = content,
-            .document = std::nullopt,
-        };
+        (*modules)[std::move(params.file)] = Module(content_backup);
     }
 
     return result;

@@ -226,6 +226,21 @@ export class SkSLServer {
         return ls.Location.create(uri, toRange(document.filePosition, result.range))
     }
 
+    public completion(uri: string, position: ls.Position): ls.CompletionItem[] {
+        const file = URI.parse(uri).fsPath
+        const document = this.documents.get(file)
+        if (!document) {
+            return []
+        }
+
+        // Call wasm
+        this.setParams<CompletionParams>({ file, position: document.filePosition.toOffset(position) })
+        this.wasm._Completion()
+        const result = this.getResult<CompletionResult>(dummyCompletionResult)
+
+        return result.items
+    }
+
     private files = new Map<string, Set<string>>()
     private documents = new Map<string, Document>()
 
@@ -319,6 +334,16 @@ const dummySkSLToken: SkSLToken = {
     range: dummySkSLRange,
     tokenType: 0,
     tokenModifiers: 0,
+}
+
+interface SkSLCompletion {
+    label: string
+    kind: ls.CompletionItemKind
+}
+
+const dummySkSLCompletion: SkSLCompletion = {
+    label: '',
+    kind: 1,
 }
 
 interface UpdateParams {
@@ -417,6 +442,19 @@ interface DefinitionResult {
 const dummyDefinitionResult: DefinitionResult = {
     found: false,
     range: dummySkSLRange,
+}
+
+interface CompletionParams {
+    file: string
+    position: number
+}
+
+interface CompletionResult {
+    items: SkSLCompletion[]
+}
+
+const dummyCompletionResult: CompletionResult = {
+    items: [dummySkSLCompletion],
 }
 
 function toRange(filePosition: FilePosition, range: SkSLRange): ls.Range {

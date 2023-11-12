@@ -148,11 +148,11 @@ GetSymbolResult GetSymbol(Modules* modules, const GetSymbolParams& params) {
     GetSymbolResult result;
 
     auto iter = modules->find(params.file);
-    if (iter == modules->end() || !iter->second.document) {
+    if (iter == modules->end() || !iter->second.HasProgram()) {
         return result;
     }
 
-    for (const auto& element : iter->second.document->program->fOwnedElements) {
+    for (const auto& element : iter->second.GetProgram()->fOwnedElements) {
         switch (element->kind()) {
         case SkSL::ProgramElementKind::kExtension: {
             auto& extension = element->as<SkSL::Extension>();
@@ -161,22 +161,22 @@ GetSymbolResult GetSymbol(Modules* modules, const GetSymbolParams& params) {
         }
         case SkSL::ProgramElementKind::kFunction: {
             auto& function = element->as<SkSL::FunctionDefinition>();
-            Parse(&result.symbols, function, iter->second.content);
+            Parse(&result.symbols, function, iter->second.GetContent());
             break;
         }
         case SkSL::ProgramElementKind::kFunctionPrototype: {
             auto& prototype = element->as<SkSL::FunctionPrototype>();
-            Parse(&result.symbols, prototype, iter->second.content);
+            Parse(&result.symbols, prototype, iter->second.GetContent());
             break;
         }
         case SkSL::ProgramElementKind::kGlobalVar: {
             auto& var = element->as<SkSL::GlobalVarDeclaration>();
-            Parse(&result.symbols, var, iter->second.content);
+            Parse(&result.symbols, var, iter->second.GetContent());
             break;
         }
         case SkSL::ProgramElementKind::kInterfaceBlock: {
             auto& interface = element->as<SkSL::InterfaceBlock>();
-            Parse(&result.symbols, interface, iter->second.content);
+            Parse(&result.symbols, interface, iter->second.GetContent());
             break;
         }
         case SkSL::ProgramElementKind::kModifiers: {
@@ -186,7 +186,7 @@ GetSymbolResult GetSymbol(Modules* modules, const GetSymbolParams& params) {
         }
         case SkSL::ProgramElementKind::kStructDefinition: {
             auto& struct_d = element->as<SkSL::StructDefinition>();
-            Parse(&result.symbols, struct_d, iter->second.content);
+            Parse(&result.symbols, struct_d, iter->second.GetContent());
             break;
         }
         }
