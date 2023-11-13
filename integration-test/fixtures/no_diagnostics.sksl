@@ -1,0 +1,4 @@
+// kind=shader
+half4 main(float2) {
+    return float4(1);
+}

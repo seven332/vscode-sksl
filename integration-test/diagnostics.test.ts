@@ -24,6 +24,10 @@ suite('Diagnostics', () => {
             },
         ])
     })
+
+    test('no diagnostics', async () => {
+        await testDiagnostics('no_diagnostics.sksl', [])
+    })
 })
 
 async function testDiagnostics(name: string, expected: vscode.Diagnostic[]) {
