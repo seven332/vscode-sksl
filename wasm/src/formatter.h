@@ -33,6 +33,7 @@ class Formatter {
     bool PipeBeforeNewLine(SkSL::Lexer* lexer, std::uint8_t type);
 
     [[nodiscard]] bool IsNewLine() const;
+    [[nodiscard]] bool IsInFor() const;
     [[nodiscard]] SkSL::Token GetLastToken() const;
     [[nodiscard]] SkSL::Token GetLastMaybeEmptyToken() const;
     [[nodiscard]] SkSL::Token GetSecondLastToken() const;

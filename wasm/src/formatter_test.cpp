@@ -98,3 +98,7 @@ TEST(FormatterTest, Layout) {
         "layout(color) uniform vec4 in_color;\n"
     );
 }
+
+TEST(FormatterTest, For) {
+    EXPECT_STREQ(Formatter().Format("for(1;1;1)").c_str(), "for (1; 1; 1)\n");
+}

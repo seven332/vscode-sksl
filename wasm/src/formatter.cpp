@@ -254,8 +254,10 @@ std::string Formatter::Format(std::string_view content) {  // NOLINT
             break;
         case TokenKind::TK_SEMICOLON: {  // ;
             AppendNoSpace(token);
-            PipeBeforeNewLine(&lexer, PipeType::kComment);
-            NewLineActively();
+            if (!IsInFor()) {
+                PipeBeforeNewLine(&lexer, PipeType::kComment);
+                NewLineActively();
+            }
             break;
         }
         case TokenKind::TK_WHITESPACE: {
@@ -328,6 +330,12 @@ bool Formatter::PipeBeforeNewLine(SkSL::Lexer* lexer, std::uint8_t type) {
 
 bool Formatter::IsNewLine() const {
     return new_line_type_ != NewLineType::kNone;
+}
+
+bool Formatter::IsInFor() const {
+    return std::ranges::any_of(line_tokens_, [this](const auto& token) {
+        return content_.substr(token.fOffset, token.fLength) == "for";
+    });
 }
 
 SkSL::Token Formatter::GetLastToken() const {
