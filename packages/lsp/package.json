@@ -1,0 +1,13 @@
+{
+    "name": "@workspace/lsp",
+    "version": "1.0.0",
+    "author": "seven332",
+    "license": "MIT",
+    "main": "src/sksl-server.ts",
+    "dependencies": {
+        "@workspace/util": "workspace:*",
+        "@workspace/wasm": "workspace:*",
+        "vscode-languageserver": "^9.0.1",
+        "vscode-uri": "^3.0.8"
+    }
+}

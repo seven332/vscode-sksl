@@ -3,7 +3,7 @@ import * as path from 'path'
 
 export class Document {
     public static async create(name: string): Promise<Document> {
-        const uri = vscode.Uri.file(path.resolve(__dirname, '../integration-test/fixtures', name))
+        const uri = vscode.Uri.file(path.resolve(__dirname, '../src/fixtures', name))
         const ext = vscode.extensions.getExtension('seven332.vscode-sksl')!
         await ext.activate()
         const doc = await vscode.workspace.openTextDocument(uri)

@@ -1,10 +1,25 @@
 import { URI } from 'vscode-uri'
-import createSkSLWasm, { SkSLWasm } from './sksl-wasm'
+import createSkSLWasm, { SkSLWasm } from '@workspace/wasm'
 import * as ls from 'vscode-languageserver/node'
-import { decode, encode } from './simple-codec'
-import { uinteger } from 'vscode-languageclient'
 import { FilePosition } from './file-position'
 import { UTFOffset, dummyUTFOffset } from './utf-offset-converter'
+import { decode, encode } from '@workspace/util'
+
+export const kTokenTypes = [
+    'class',
+    'interface',
+    'struct',
+    'parameter',
+    'variable',
+    'property',
+    'decorator',
+    'function',
+    'number',
+]
+
+export const kTokenModifiers = ['readonly', 'defaultLibrary']
+
+export const kTriggerCharacters = [':', '=']
 
 export class SkSLServer {
     public static async create(path: string): Promise<SkSLServer> {
@@ -274,8 +289,8 @@ interface Document {
 }
 
 interface SkSLRange {
-    start: uinteger
-    end: uinteger
+    start: ls.uinteger
+    end: ls.uinteger
 }
 
 const dummySkSLRange: SkSLRange = {
@@ -327,8 +342,8 @@ const dummySkSLSymbol: SkSLSymbol = (() => {
 
 interface SkSLToken {
     range: SkSLRange
-    tokenType: uinteger
-    tokenModifiers: uinteger
+    tokenType: ls.uinteger
+    tokenModifiers: ls.uinteger
 }
 
 const dummySkSLToken: SkSLToken = {

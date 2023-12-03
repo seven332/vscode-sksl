@@ -1,5 +1,5 @@
 import * as ls from 'vscode-languageserver/node'
-import { findLastLE } from './binary-search'
+import { findLastLE } from '@workspace/util'
 
 export class OffsetPositionConverter {
     public constructor(content: string) {

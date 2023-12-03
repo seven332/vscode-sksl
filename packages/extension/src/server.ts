@@ -1,6 +1,6 @@
 import * as ls from 'vscode-languageserver/node'
 import * as lstd from 'vscode-languageserver-textdocument'
-import { SkSLServer } from './sksl-server'
+import { SkSLServer } from '@workspace/lsp'
 
 const connection = ls.createConnection(ls.ProposedFeatures.all)
 const documents = new ls.TextDocuments(lstd.TextDocument)

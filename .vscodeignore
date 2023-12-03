@@ -1,7 +1,3 @@
 **
-!README.md
-!CHANGELOG.md
-!LICENSE
-!package.json
-!build
-!resources
+!packages/extension/build
+!packages/extension/resources

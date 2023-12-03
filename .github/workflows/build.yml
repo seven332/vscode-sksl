@@ -12,29 +12,39 @@ jobs:
 
         steps:
             - uses: actions/checkout@v4
+              name: Checkout
               with:
                   submodules: true
 
-            - uses: actions/setup-node@v3
+            - uses: pnpm/action-setup@v2
+              name: Install pnpm
               with:
-                  node-version: 'lts/Iron'
-                  cache: 'npm'
+                  version: 8
+                  run_install: false
+
+            - uses: actions/setup-node@v3
+              name: Install Node.js
+              with:
+                  node-version: 20
+                  cache: pnpm
+                  cache-dependency-path: pnpm-lock.yaml
 
             - uses: mymindstorm/setup-emsdk@v11
+              name: Install Emscripten SDK
               with:
-                  version: 3.1.48
+                  version: 3.1.50
                   actions-cache-folder: 'emsdk-cache'
 
             - run: cmake --version
             - run: c++ -v
             - run: em++ -v
 
-            - run: npm ci
-            - run: npm run build
-            - run: xvfb-run -a npm run test
-            - run: npm run package
+            - run: pnpm install
+            - run: pnpm build
+            - run: xvfb-run -a pnpm test
+            - run: pnpm run package
 
             - uses: actions/upload-artifact@v3
               with:
                   name: sksl.vsix
-                  path: sksl.vsix
+                  path: packages/extension/sksl.vsix

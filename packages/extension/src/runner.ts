@@ -1,5 +1,5 @@
 import * as vscode from 'vscode'
-import { HtmlBuilder } from './html-builder'
+import { HtmlBuilder } from '@workspace/util'
 
 export function showRunner() {
     const panel = vscode.window.createWebviewPanel('sksl.runner', 'SkSL Runner', vscode.ViewColumn.Beside, {})

@@ -1,5 +1,7 @@
-package-lock.json
 node_modules
 build
-compile_commands.json
-wasm/third_party/externals
+
+packages/wasm/c++
+
+package-lock.json
+pnpm-lock.yaml

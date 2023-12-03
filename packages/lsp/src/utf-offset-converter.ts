@@ -1,4 +1,4 @@
-import { findFirstGE } from './binary-search'
+import { findFirstGE } from '@workspace/util'
 
 export interface UTFOffset {
     utf8Offset: number

@@ -1,20 +1,9 @@
 import * as child_process from 'child_process'
-import * as os from 'os'
 import * as path from 'path'
 import * as fs from 'fs'
 
 function canonicalize(file: string): string {
     return path.join(...file.split(path.posix.sep))
-}
-
-function npx(name: string): string {
-    return `${name}${os.platform() == 'win32' ? '.cmd' : ''}`
-}
-
-function list(dir: string, regex: RegExp): string[] {
-    dir = canonicalize(dir)
-    const entries = fs.readdirSync(dir)
-    return entries.filter((entry) => entry.match(regex)).map((entry) => path.join(dir, entry))
 }
 
 function chdir(dir: string) {
@@ -31,59 +20,59 @@ function exec(cmd: string, ...args: string[]) {
     }
 }
 
-enum RollupKind {
-    Production = 'production',
-    Development = 'development',
-    IntegrationTest = 'integration-test',
+function pnpm_exec(cmd: string, ...args: string[]) {
+    exec('pnpm', 'exec', cmd, ...args)
 }
 
-function rollup(kind: RollupKind) {
-    chdir('.')
-    exec(npx('rollup'), '--config', '--configPlugin=typescript', `--environment=NODE_ENV:${kind}`)
+function list(dir: string, regex: RegExp): string[] {
+    dir = canonicalize(dir)
+    const entries = fs.readdirSync(dir)
+    return entries.filter((entry) => entry.match(regex)).map((entry) => path.join(dir, entry))
 }
 
 function run(target: string) {
     switch (target) {
         case 'prepare':
-            chdir('wasm')
+            chdir('packages/wasm/c++')
             exec('bash', 'prepare.sh')
             break
         case 'build':
-            chdir('.')
-            exec('rm', '-rf', 'build')
-            chdir('wasm')
+            // wasm
+            chdir('packages/wasm/c++')
             exec('bash', 'build.sh')
             exec('cp', 'build/src/sksl-wasm.js', '../src')
-            rollup(RollupKind.Production)
-            chdir('script')
-            exec(npx('ts-node'), 'syntax.ts', '../build')
-            chdir('wasm')
-            exec('cp', 'build/src/sksl-wasm.wasm', '../build')
+            // extension
+            chdir('packages/extension')
+            exec('rm', '-rf', 'build')
+            pnpm_exec('rollup', '--config', '--configPlugin=typescript')
+            exec('cp', '../wasm/c++/build/src/sksl-wasm.wasm', 'build')
+            chdir('.')
+            exec('ts-node', 'script/syntax.ts', 'packages/extension/build')
             break
         case 'test':
             // js test
             chdir('.')
-            exec(npx('jest'))
+            exec('jest')
             // wasm test
-            chdir('wasm')
+            chdir('packages/wasm/c++')
             exec('bash', 'test.sh')
             // integration test
-            chdir('.')
-            exec('rm', '-rf', 'build_integration_test')
-            rollup(RollupKind.IntegrationTest)
-            chdir('.')
-            exec(npx('vscode-test'))
+            chdir('packages/integration-test')
+            exec('rm', '-rf', 'build')
+            pnpm_exec('rollup', '--config', '--configPlugin=typescript')
+            chdir('packages/extension')
+            pnpm_exec('vscode-test')
             break
         case 'format':
-            exec(npx('prettier'), '--write', '.')
-            exec('clang-format', '-i', ...list('wasm/src', /\.(cpp|h)$/))
-            exec('clang-format', '-i', ...list('wasm/src/action', /\.(cpp|h)$/))
+            exec('prettier', '--write', '.')
+            exec('clang-format', '-i', ...list('packages/wasm/c++/src', /\.(cpp|h)$/))
+            exec('clang-format', '-i', ...list('packages/wasm/c++/src/action', /\.(cpp|h)$/))
             break
         case 'package':
-            chdir('.')
-            exec(npx('vsce'), 'package', '--out', 'sksl.vsix')
-            break
-        default:
+            chdir('packages/extension')
+            exec('cp', '-f', '../../LICENSE', '.')
+            exec('cp', '-f', '../../README.md', '.')
+            pnpm_exec('vsce', 'package', '--no-dependencies', '--out', 'sksl.vsix')
             break
     }
 }

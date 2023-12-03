@@ -1,0 +1,10 @@
+{
+    "name": "@workspace/wasm",
+    "version": "1.0.0",
+    "author": "seven332",
+    "license": "MIT",
+    "main": "src/sksl-wasm.js",
+    "dependencies": {
+        "@types/emscripten": "^1.39.10"
+    }
+}

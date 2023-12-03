@@ -1,0 +1,15 @@
+{
+    "name": "@workspace/integration-test",
+    "version": "1.0.0",
+    "author": "seven332",
+    "license": "MIT",
+    "devDependencies": {
+        "@rollup/plugin-commonjs": "^25.0.7",
+        "@rollup/plugin-node-resolve": "^15.2.3",
+        "@rollup/plugin-typescript": "^11.1.5",
+        "@types/mocha": "^10.0.6",
+        "@types/vscode": "^1.77.0",
+        "mocha": "^10.2.0",
+        "rollup": "^4.6.1"
+    }
+}

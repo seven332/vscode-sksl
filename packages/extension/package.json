@@ -1,0 +1,110 @@
+{
+    "name": "vscode-sksl",
+    "publisher": "seven332",
+    "version": "0.1.7",
+    "displayName": "SkSL Language Server",
+    "description": "Code IntelliSense for Skia's shading language.",
+    "license": "MIT",
+    "categories": [
+        "Programming Languages"
+    ],
+    "keywords": [
+        "sksl",
+        "skia"
+    ],
+    "homepage": "https://github.com/seven332/vscode-sksl",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/seven332/vscode-sksl.git"
+    },
+    "bugs": {
+        "url": "https://github.com/seven332/vscode-sksl/issues"
+    },
+    "main": "./build/index.js",
+    "icon": "./resources/icon.png",
+    "engines": {
+        "vscode": "^1.77.0"
+    },
+    "extensionKind": [
+        "workspace"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "sksl",
+                "aliases": [
+                    "SkSL",
+                    "SKSL",
+                    "sksl"
+                ],
+                "extensions": [
+                    "sksl"
+                ],
+                "configuration": "./build/language.json",
+                "icon": {
+                    "light": "./resources/sksl-light.png",
+                    "dark": "./resources/sksl-dark.png"
+                }
+            }
+        ],
+        "grammars": [
+            {
+                "language": "sksl",
+                "scopeName": "source.sksl",
+                "path": "./build/grammar.json"
+            }
+        ],
+        "commands": [
+            {
+                "command": "sksl.showRunner",
+                "title": "Show SkSL Runner"
+            }
+        ],
+        "menus": {
+            "editor/context": [
+                {
+                    "when": "resourceLangId == sksl",
+                    "command": "sksl.showRunner",
+                    "group": "navigation"
+                }
+            ]
+        },
+        "walkthroughs": [
+            {
+                "id": "skslWelcome",
+                "title": "Get Started with SkSL",
+                "description": "Enable Code IntelliSense for SkSL",
+                "steps": [
+                    {
+                        "id": "sksl.setKind",
+                        "title": "Set the kind of SkSL",
+                        "description": "The kind of SkSL must be presented in source code. It could be `shader`, `colorfilter`, `blender`, `meshfrag` or `meshvert`.",
+                        "media": {
+                            "svg": "./resources/walkthrough-set-kind.svg",
+                            "altText": "SkSL kind"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "dependencies": {
+        "@workspace/lsp": "workspace:*",
+        "@workspace/util": "workspace:*",
+        "vscode-languageclient": "^9.0.1",
+        "vscode-languageserver": "^9.0.1",
+        "vscode-languageserver-textdocument": "^1.0.11"
+    },
+    "devDependencies": {
+        "@rollup/plugin-commonjs": "^25.0.7",
+        "@rollup/plugin-node-resolve": "^15.2.3",
+        "@rollup/plugin-terser": "^0.4.4",
+        "@rollup/plugin-typescript": "^11.1.5",
+        "@types/vscode": "^1.77.0",
+        "@vscode/test-cli": "^0.0.4",
+        "@vscode/test-electron": "^2.3.8",
+        "@vscode/vsce": "^2.22.0",
+        "rollup": "^4.6.1",
+        "tslib": "^2.6.2"
+    }
+}
