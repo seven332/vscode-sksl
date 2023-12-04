@@ -14,3 +14,5 @@ packages/extension/README.md
 packages/extension/sksl.vsix
 
 packages/integration-test/build
+
+packages/runner/dist

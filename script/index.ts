@@ -41,11 +41,16 @@ function run(target: string) {
             chdir('packages/wasm/c++')
             exec('bash', 'build.sh')
             exec('cp', 'build/src/sksl-wasm.js', '../src')
+            // runner
+            chdir('packages/runner')
+            exec('rm', '-rf', 'dist')
+            exec('pnpm', 'build')
             // extension
             chdir('packages/extension')
             exec('rm', '-rf', 'build')
             pnpm_exec('rollup', '--config', '--configPlugin=typescript')
             exec('cp', '../wasm/c++/build/src/sksl-wasm.wasm', 'build')
+            exec('cp', '-R', '../runner/dist', 'build/runner')
             chdir('.')
             exec('ts-node', 'script/syntax.ts', 'packages/extension/build')
             break
