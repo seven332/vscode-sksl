@@ -6,7 +6,7 @@ import * as fs from 'fs'
 let client: LanguageClient | undefined
 
 export async function activate(context: vscode.ExtensionContext) {
-    context.subscriptions.push(vscode.commands.registerCommand('sksl.showRunner', () => showRunner(context)))
+    context.subscriptions.push(vscode.commands.registerCommand('sksl.showRunner', (uri) => showRunner(context, uri)))
 
     const module = context.asAbsolutePath(path.join('build', 'server.js'))
     const skslWasmPath = context.asAbsolutePath(path.join('build', 'sksl-wasm.wasm'))
@@ -36,10 +36,37 @@ export async function deactivate() {
     }
 }
 
-function showRunner(context: vscode.ExtensionContext) {
+function showRunner(context: vscode.ExtensionContext, uri: vscode.Uri | undefined) {
     const panel = vscode.window.createWebviewPanel('sksl.runner', 'SkSL Runner', vscode.ViewColumn.Beside, {
         enableScripts: true,
     })
+
     const htmlPath = context.asAbsolutePath(path.join('build', 'runner', 'index.html'))
     panel.webview.html = fs.readFileSync(htmlPath).toString()
+
+    if (uri) {
+        selectSkSL(panel, uri)
+    }
+
+    panel.webview.onDidReceiveMessage(
+        async () => {
+            const uris = await vscode.window.showOpenDialog({
+                canSelectFiles: true,
+                canSelectFolders: false,
+                canSelectMany: false,
+                filters: {
+                    SkSL: ['sksl'],
+                },
+            })
+            if (uris && uris.length >= 1) {
+                selectSkSL(panel, uris[0])
+            }
+        },
+        undefined,
+        context.subscriptions,
+    )
+}
+
+function selectSkSL(panel: vscode.WebviewPanel, uri: vscode.Uri) {
+    panel.webview.postMessage(uri.toString())
 }
