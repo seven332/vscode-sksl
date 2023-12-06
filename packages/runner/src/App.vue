@@ -11,8 +11,9 @@ window.addEventListener('message', (event) => {
     skslPath.value = message
 })
 
+const vscode = acquireVsCodeApi()
+
 function selectSkSL() {
-    const vscode = acquireVsCodeApi()
     vscode.postMessage('Select SkSL')
 }
 </script>
