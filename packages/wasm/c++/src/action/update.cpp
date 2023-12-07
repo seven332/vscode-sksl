@@ -42,13 +42,12 @@
 #include <cstdint>
 #include <iostream>
 #include <optional>
-#include <regex>
 #include <string>
 #include <string_view>
 #include <vector>
 
 #include "data.h"
-#include "hash.h"
+#include "kind.h"
 #include "lexer.h"
 #include "module.h"
 #include "token.h"
@@ -77,42 +76,6 @@ class SkSLDiagnosticReporter : public SkSL::ErrorReporter {
  private:
     std::vector<SkSLDiagnostic> diagnostics_;
 };
-
-struct Kind {
-    std::string str;
-    std::uint32_t position;
-    std::uint32_t length;
-};
-
-std::optional<Kind> GetKind(const std::string& content) {
-    std::regex re(R"(^[ \t]*\/\/[ /\t]*kind[ \t]*[:=][ \t]*(\w+))", std::regex_constants::ECMAScript);
-    std::cmatch match;
-    if (!std::regex_search(content.data(), match, re)) {
-        return std::nullopt;
-    }
-    return Kind {
-        .str = match.str(1),
-        .position = static_cast<std::uint32_t>(match.position(1)),
-        .length = static_cast<std::uint32_t>(match.length(1)),
-    };
-}
-
-std::optional<SkSL::ProgramKind> ToSkSLProgramKind(const std::string& kind) {
-    switch (Hash(kind.c_str())) {
-    case Hash("shader"):
-        return SkSL::ProgramKind::kRuntimeShader;
-    case Hash("colorfilter"):
-        return SkSL::ProgramKind::kRuntimeColorFilter;
-    case Hash("blender"):
-        return SkSL::ProgramKind::kRuntimeBlender;
-    case Hash("meshfrag"):
-        return SkSL::ProgramKind::kMeshFragment;
-    case Hash("meshvert"):
-        return SkSL::ProgramKind::kMeshVertex;
-    default:
-        return std::nullopt;
-    }
-}
 
 static std::unique_ptr<SkSL::Program> CompileProgram(
     SkSL::Compiler* compiler,
