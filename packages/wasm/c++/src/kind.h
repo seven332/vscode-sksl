@@ -3,6 +3,7 @@
 #include <src/sksl/SkSLProgramKind.h>
 
 #include <cstdint>
+#include <optional>
 #include <string>
 
 struct Kind {
