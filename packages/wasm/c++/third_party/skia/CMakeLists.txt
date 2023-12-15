@@ -5,6 +5,8 @@ cmake_path(SET SKIA_SOURCE_DIR NORMALIZE ${CMAKE_CURRENT_SOURCE_DIR}/../external
 cmake_path(SET SKIA_CMAKE_DIR NORMALIZE ${CMAKE_CURRENT_BINARY_DIR}/cmake)
 
 add_library(skia_sksl STATIC
+    ${SKIA_SOURCE_DIR}/src/core/SkRasterPipeline.cpp
+
     ${SKIA_SOURCE_DIR}/src/sksl/SkSLAnalysis.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/SkSLBuiltinTypes.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/SkSLCompiler.cpp
@@ -40,8 +42,8 @@ add_library(skia_sksl STATIC
     # ${SKIA_SOURCE_DIR}/src/sksl/analysis/SkSLReturnsInputAlpha.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/analysis/SkSLSwitchCaseContainsExit.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/analysis/SkSLSymbolTableStackBuilder.cpp
-    # ${SKIA_SOURCE_DIR}/src/sksl/codegen/SkSLRasterPipelineBuilder.cpp
-    # ${SKIA_SOURCE_DIR}/src/sksl/codegen/SkSLRasterPipelineCodeGenerator.cpp
+    ${SKIA_SOURCE_DIR}/src/sksl/codegen/SkSLRasterPipelineBuilder.cpp
+    ${SKIA_SOURCE_DIR}/src/sksl/codegen/SkSLRasterPipelineCodeGenerator.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/ir/SkSLBinaryExpression.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/ir/SkSLBlock.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/ir/SkSLChildCall.cpp

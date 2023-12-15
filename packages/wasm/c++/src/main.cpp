@@ -14,6 +14,7 @@
 #include "action/hover.h"
 #include "action/update.h"
 #include "module.h"
+#include "runner/query.h"
 #include "utf_offset.h"
 
 static Modules modules;
@@ -71,4 +72,19 @@ ACTION(Definition, "definition")
 ACTION(Completion, "completion")
 
 #undef ACTION
+
+#define RUNNER(Type, Name)                     \
+    void Type() {                              \
+        Type##Params params;                   \
+        Read(params_bytes, 0, &params);        \
+        std::cout << Name " start" << '\n';    \
+        auto result = Type(std::move(params)); \
+        std::cout << Name " end" << '\n';      \
+        result_bytes.clear();                  \
+        Write(&result_bytes, result);          \
+    }
+
+RUNNER(Query, "query")
+
+#undef RUNNER
 }

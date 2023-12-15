@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "author": "seven332",
     "license": "MIT",
-    "main": "src/sksl-server.ts",
+    "main": "src/index.ts",
     "dependencies": {
         "@workspace/util": "workspace:*",
         "@workspace/wasm": "workspace:*",

@@ -15,6 +15,7 @@ export interface SkSLWasm extends EmscriptenModule {
     _Hover(): void
     _Definition(): void
     _Completion(): void
+    _Query(): void
 }
 
 export default function createSkSLWasm(moduleOverrides?: Partial<EmscriptenModule>): Promise<SkSLWasm>

@@ -4,6 +4,7 @@ import * as ls from 'vscode-languageserver/node'
 import { FilePosition } from './file-position'
 import { UTFOffset, dummyUTFOffset } from './utf-offset-converter'
 import { decode, encode } from '@workspace/util'
+import { QueryParams, QueryResult, dummyQueryResult } from './runner-data'
 
 export const kTokenTypes = [
     'class',
@@ -255,6 +256,14 @@ export class SkSLServer {
         const result = this.getResult<CompletionResult>(dummyCompletionResult)
 
         return result.items
+    }
+
+    // Runner
+
+    public query(params: QueryParams): QueryResult {
+        this.setParams<QueryParams>(params)
+        this.wasm._Query()
+        return this.getResult<QueryResult>(dummyQueryResult)
     }
 
     private files = new Map<string, Set<string>>()

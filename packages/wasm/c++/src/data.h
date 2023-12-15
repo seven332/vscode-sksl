@@ -130,3 +130,13 @@ struct SkSLCompletion {
         Write(bytes, static_cast<int>(value.kind));
     }
 };
+
+struct SkSLUniform {
+    std::string type;
+    std::string name;
+
+    friend void Write(std::vector<std::byte>* bytes, const SkSLUniform& value) {
+        Write(bytes, value.type);
+        Write(bytes, value.name);
+    }
+};

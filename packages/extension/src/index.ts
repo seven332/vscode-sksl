@@ -2,6 +2,8 @@ import * as path from 'path'
 import * as vscode from 'vscode'
 import { LanguageClient, TransportKind } from 'vscode-languageclient/node'
 import * as fs from 'fs'
+import { kQueryUrl } from './runner-data'
+import { QueryResult } from '@workspace/lsp'
 
 let client: LanguageClient | undefined
 
@@ -67,6 +69,11 @@ function showRunner(context: vscode.ExtensionContext, uri: vscode.Uri | undefine
     )
 }
 
-function selectSkSL(panel: vscode.WebviewPanel, uri: vscode.Uri) {
+async function selectSkSL(panel: vscode.WebviewPanel, uri: vscode.Uri) {
     panel.webview.postMessage(uri.toString())
+    const buffer = fs.readFileSync(uri.fsPath)
+    const result: QueryResult | undefined = await client?.sendRequest(kQueryUrl, {
+        source: buffer.toString(),
+    })
+    console.log(result)
 }

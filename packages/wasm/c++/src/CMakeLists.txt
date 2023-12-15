@@ -15,9 +15,29 @@ add_library(sksl-wasm-lib STATIC
     action/hover.cpp
     action/definition.cpp
     action/completion.cpp
+    runner/query.cpp
 )
 target_include_directories(sksl-wasm-lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(sksl-wasm-lib PUBLIC skia_sksl)
+
+set(EXPORTED_FUNCTIONS
+    _ToUTFOffsets
+    _SetParamsSize
+    _GetParamsPtr
+    _GetResultPtr
+    _GetResultSize
+    _Update
+    _Close
+    _GetSymbol
+    _Format
+    _GetToken
+    _GetTokenRange
+    _Hover
+    _Definition
+    _Completion
+    _Query
+)
+list(JOIN EXPORTED_FUNCTIONS "," EXPORTED_FUNCTIONS_JOINED)
 
 add_executable(sksl-wasm main.cpp)
 target_link_libraries(sksl-wasm PRIVATE sksl-wasm-lib)
@@ -26,7 +46,7 @@ target_link_options(sksl-wasm PRIVATE
     -sENVIRONMENT=node
     -sMODULARIZE
     -sEXPORTED_RUNTIME_METHODS=ccall
-    -sEXPORTED_FUNCTIONS=_ToUTFOffsets,_SetParamsSize,_GetParamsPtr,_GetResultPtr,_GetResultSize,_Update,_Close,_GetSymbol,_Format,_GetToken,_GetTokenRange,_Hover,_Definition,_Completion
+    -sEXPORTED_FUNCTIONS=${EXPORTED_FUNCTIONS_JOINED}
     -sALLOW_MEMORY_GROWTH=1
     -sINITIAL_MEMORY=32MB
     -sDISABLE_EXCEPTION_CATCHING=1
