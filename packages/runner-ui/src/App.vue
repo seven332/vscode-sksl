@@ -1,20 +1,29 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import './vscode-webview'
+import {
+    type Message,
+    MessageType,
+    pipe,
+    type SelectSkSLRequestMessage,
+    type SelectSkSLResponseMessage,
+} from '@workspace/runner-data'
 
 let skslPath = ref('')
 
-// TODO: message type
-
 window.addEventListener('message', (event) => {
-    const message = event.data
-    skslPath.value = message
+    const message = event.data as Message
+    switch (message.type) {
+        case MessageType.kSelectSkSL:
+            skslPath.value = (message as SelectSkSLResponseMessage).path
+            break
+    }
 })
 
 const vscode = acquireVsCodeApi()
 
 function selectSkSL() {
-    vscode.postMessage('Select SkSL')
+    vscode.postMessage(pipe<SelectSkSLRequestMessage>({ type: MessageType.kSelectSkSL }))
 }
 </script>
 
