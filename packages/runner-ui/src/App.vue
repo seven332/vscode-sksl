@@ -9,6 +9,8 @@ import {
     type SelectSkSLResponse,
     type SkSLUniform,
     type GetUniformsResponse,
+    type RunSkSLRequest,
+    type DebugSkSLRequest,
 } from '@workspace/runner-data'
 
 interface Uniform {
@@ -30,7 +32,6 @@ window.addEventListener('message', (event) => {
             for (const uniform of (message as GetUniformsResponse).uniforms) {
                 uniforms.value.push({ uniform: uniform, value: '' })
             }
-            console.log(uniforms)
             break
     }
 })
@@ -39,6 +40,26 @@ const vscode = acquireVsCodeApi()
 
 function selectSkSL() {
     vscode.postMessage(pipe<SelectSkSLRequest>({ type: MessageType.kSelectSkSL }))
+}
+
+function runSkSL() {
+    vscode.postMessage(
+        pipe<RunSkSLRequest>({
+            type: MessageType.kRunSkSL,
+            path: path.value,
+            values: uniforms.value.map((u) => u.value),
+        }),
+    )
+}
+
+function debugSkSL() {
+    vscode.postMessage(
+        pipe<DebugSkSLRequest>({
+            type: MessageType.kDebugSkSL,
+            path: path.value,
+            values: uniforms.value.map((u) => u.value),
+        }),
+    )
 }
 </script>
 
@@ -51,6 +72,8 @@ function selectSkSL() {
             {{ uniform.uniform.name }} - {{ uniform.uniform.type }}
             <input type="text" v-model="uniform.value" />
         </li>
+        <button @click="runSkSL()">Run</button>
+        <button @click="debugSkSL()">Debug</button>
     </div>
 </template>
 

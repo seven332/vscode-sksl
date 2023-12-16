@@ -10,6 +10,8 @@ import {
     SelectSkSLResponse,
     pipe,
     GetUniformsResponse,
+    RunSkSLRequest,
+    DebugSkSLRequest,
 } from '@workspace/runner-data'
 
 export class Runner {
@@ -35,25 +37,34 @@ export class Runner {
         panel.webview.onDidReceiveMessage(
             async (message: Message) => {
                 switch (message.type) {
-                    case MessageType.kSelectSkSL: {
-                        const uris = await vscode.window.showOpenDialog({
-                            canSelectFiles: true,
-                            canSelectFolders: false,
-                            canSelectMany: false,
-                            filters: {
-                                SkSL: ['sksl'],
-                            },
-                        })
-                        if (uris && uris.length >= 1) {
-                            this.selectSkSL(panel, uris[0])
-                        }
+                    case MessageType.kSelectSkSL:
+                        await this.onSelectSkSLRequest(panel)
                         break
-                    }
+                    case MessageType.kRunSkSL:
+                        await this.onRunSkSLRequest(panel, message as RunSkSLRequest)
+                        break
+                    case MessageType.kDebugSkSL:
+                        await this.onDebugSkSLRequest(panel, message as DebugSkSLRequest)
+                        break
                 }
             },
             undefined,
             this.context.subscriptions,
         )
+    }
+
+    private async onSelectSkSLRequest(panel: vscode.WebviewPanel) {
+        const uris = await vscode.window.showOpenDialog({
+            canSelectFiles: true,
+            canSelectFolders: false,
+            canSelectMany: false,
+            filters: {
+                SkSL: ['sksl'],
+            },
+        })
+        if (uris && uris.length >= 1) {
+            this.selectSkSL(panel, uris[0])
+        }
     }
 
     private async selectSkSL(panel: vscode.WebviewPanel, uri: vscode.Uri) {
@@ -74,5 +85,15 @@ export class Runner {
                 uniforms: result.uniforms,
             }),
         )
+    }
+
+    private async onRunSkSLRequest(panel: vscode.WebviewPanel, request: RunSkSLRequest) {
+        console.log(panel)
+        console.log(request)
+    }
+
+    private async onDebugSkSLRequest(panel: vscode.WebviewPanel, request: DebugSkSLRequest) {
+        console.log(panel)
+        console.log(request)
     }
 }
