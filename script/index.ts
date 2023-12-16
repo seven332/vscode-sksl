@@ -41,8 +41,8 @@ function run(target: string) {
             chdir('packages/wasm/c++')
             exec('bash', 'build.sh')
             exec('cp', 'build/src/sksl-wasm.js', '../src')
-            // runner
-            chdir('packages/runner')
+            // runner-ui
+            chdir('packages/runner-ui')
             exec('rm', '-rf', 'dist')
             exec('pnpm', 'build')
             // extension
@@ -50,7 +50,7 @@ function run(target: string) {
             exec('rm', '-rf', 'build')
             pnpm_exec('rollup', '--config', '--configPlugin=typescript')
             exec('cp', '../wasm/c++/build/src/sksl-wasm.wasm', 'build')
-            exec('cp', '-R', '../runner/dist', 'build/runner')
+            exec('cp', '-R', '../runner-ui/dist', 'build/runner-ui')
             chdir('.')
             exec('ts-node', 'script/syntax.ts', 'packages/extension/build')
             break

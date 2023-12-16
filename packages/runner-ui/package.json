@@ -1,5 +1,5 @@
 {
-    "name": "@workspace/runner",
+    "name": "@workspace/runner-ui",
     "version": "1.0.0",
     "private": true,
     "scripts": {

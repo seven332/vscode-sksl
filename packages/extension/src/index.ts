@@ -43,7 +43,7 @@ function showRunner(context: vscode.ExtensionContext, uri: vscode.Uri | undefine
         enableScripts: true,
     })
 
-    const htmlPath = context.asAbsolutePath(path.join('build', 'runner', 'index.html'))
+    const htmlPath = context.asAbsolutePath(path.join('build', 'runner-ui', 'index.html'))
     panel.webview.html = fs.readFileSync(htmlPath).toString()
 
     if (uri) {

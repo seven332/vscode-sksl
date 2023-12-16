@@ -9,7 +9,7 @@
         "test": "ts-node script test",
         "format": "ts-node script format",
         "package": "ts-node script package",
-        "dev:runner": "pnpm -F runner dev"
+        "dev:runner-ui": "pnpm -F runner-ui dev"
     },
     "devDependencies": {
         "@types/jest": "^29.5.10",

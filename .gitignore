@@ -15,4 +15,4 @@ packages/extension/sksl.vsix
 
 packages/integration-test/build
 
-packages/runner/dist
+packages/runner-ui/dist
