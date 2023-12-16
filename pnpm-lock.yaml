@@ -44,6 +44,9 @@ importers:
       '@workspace/lsp':
         specifier: workspace:*
         version: link:../lsp
+      '@workspace/runner-data':
+        specifier: workspace:*
+        version: link:../runner-data
       '@workspace/util':
         specifier: workspace:*
         version: link:../util
@@ -114,6 +117,9 @@ importers:
 
   packages/lsp:
     dependencies:
+      '@workspace/runner-data':
+        specifier: workspace:*
+        version: link:../runner-data
       '@workspace/util':
         specifier: workspace:*
         version: link:../util
@@ -127,7 +133,9 @@ importers:
         specifier: ^3.0.8
         version: 3.0.8
 
-  packages/runner:
+  packages/runner-data: {}
+
+  packages/runner-ui:
     dependencies:
       vue:
         specifier: ^3.3.4

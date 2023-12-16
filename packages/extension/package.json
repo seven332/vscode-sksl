@@ -90,6 +90,7 @@
     },
     "dependencies": {
         "@workspace/lsp": "workspace:*",
+        "@workspace/runner-data": "workspace:*",
         "@workspace/util": "workspace:*",
         "vscode-languageclient": "^9.0.1",
         "vscode-languageserver": "^9.0.1",

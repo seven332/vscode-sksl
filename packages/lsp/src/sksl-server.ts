@@ -4,7 +4,7 @@ import * as ls from 'vscode-languageserver/node'
 import { FilePosition } from './file-position'
 import { UTFOffset, dummyUTFOffset } from './utf-offset-converter'
 import { decode, encode } from '@workspace/util'
-import { QueryParams, QueryResult, dummyQueryResult } from './runner-data'
+import { QueryParams, QueryResult, dummyQueryResult } from '@workspace/runner-data'
 
 export const kTokenTypes = [
     'class',

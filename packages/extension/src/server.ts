@@ -1,7 +1,7 @@
 import * as ls from 'vscode-languageserver/node'
 import * as lstd from 'vscode-languageserver-textdocument'
-import { QueryParams, SkSLServer } from '@workspace/lsp'
-import { kQueryUrl } from './runner-data'
+import { SkSLServer } from '@workspace/lsp'
+import { QueryParams, kQueryUrl } from '@workspace/runner-data'
 
 const connection = ls.createConnection(ls.ProposedFeatures.all)
 const documents = new ls.TextDocuments(lstd.TextDocument)

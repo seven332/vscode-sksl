@@ -2,8 +2,7 @@ import * as path from 'path'
 import * as vscode from 'vscode'
 import { LanguageClient, TransportKind } from 'vscode-languageclient/node'
 import * as fs from 'fs'
-import { kQueryUrl } from './runner-data'
-import { QueryResult } from '@workspace/lsp'
+import { QueryResult, kQueryUrl } from '@workspace/runner-data'
 
 let client: LanguageClient | undefined
 

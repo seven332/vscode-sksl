@@ -1,3 +1,5 @@
+export const kQueryUrl = 'sksl/query'
+
 export interface QueryParams {
     source: string
 }

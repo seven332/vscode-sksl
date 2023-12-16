@@ -3,8 +3,9 @@
     "version": "1.0.0",
     "author": "seven332",
     "license": "MIT",
-    "main": "src/index.ts",
+    "main": "src/sksl-server.ts",
     "dependencies": {
+        "@workspace/runner-data": "workspace:*",
         "@workspace/util": "workspace:*",
         "@workspace/wasm": "workspace:*",
         "vscode-languageserver": "^9.0.1",
