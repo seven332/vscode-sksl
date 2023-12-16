@@ -2,7 +2,15 @@ import * as vscode from 'vscode'
 import { LanguageClient } from 'vscode-languageclient/node'
 import * as path from 'path'
 import * as fs from 'fs'
-import { Message, QueryResult, kQueryUrl, MessageType, SelectSkSLResponseMessage, pipe } from '@workspace/runner-data'
+import {
+    Message,
+    QueryResult,
+    kQueryUrl,
+    MessageType,
+    SelectSkSLResponse,
+    pipe,
+    GetUniformsResponse,
+} from '@workspace/runner-data'
 
 export class Runner {
     public static kCommand = 'sksl.showRunner'
@@ -50,7 +58,7 @@ export class Runner {
 
     private async selectSkSL(panel: vscode.WebviewPanel, uri: vscode.Uri) {
         panel.webview.postMessage(
-            pipe<SelectSkSLResponseMessage>({
+            pipe<SelectSkSLResponse>({
                 type: MessageType.kSelectSkSL,
                 path: uri.toString(),
             }),
@@ -60,6 +68,11 @@ export class Runner {
         const result: QueryResult = await this.client.sendRequest(kQueryUrl, {
             source: buffer.toString(),
         })
-        console.log(result)
+        panel.webview.postMessage(
+            pipe<GetUniformsResponse>({
+                type: MessageType.kGetUniforms,
+                uniforms: result.uniforms,
+            }),
+        )
     }
 }
