@@ -1,4 +1,5 @@
 import { DynamicBuffer } from './dynamic-buffer'
+import { Float } from './float'
 
 export function encode(value: unknown): Uint8Array {
     const buffer = new DynamicBuffer()
@@ -18,6 +19,8 @@ function encodeToBuffer(buffer: DynamicBuffer, value: unknown) {
         for (const element of value) {
             encodeToBuffer(buffer, element)
         }
+    } else if (value instanceof Float) {
+        buffer.writeFloat32(value.value)
     } else if (typeof value == 'object' && value != null) {
         for (const element of Object.values(value)) {
             encodeToBuffer(buffer, element)
@@ -69,6 +72,8 @@ function decodeFromBuffer<T>(buffer: DataView, offset: number, dummy: T): [T, nu
         }
 
         return [result as T, read]
+    } else if (dummy instanceof Float) {
+        return [new Float(buffer.getFloat32(offset, true)) as T, 4]
     } else if (typeof dummy == 'object' && dummy != null) {
         const result = {}
         let read = 0

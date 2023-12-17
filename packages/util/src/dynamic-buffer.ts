@@ -27,6 +27,12 @@ export class DynamicBuffer {
         this.size_ += 4
     }
 
+    public writeFloat32(value: number) {
+        this.ensureAppend(4)
+        new DataView(this.data_.buffer).setFloat32(this.size_, value, true)
+        this.size_ += 4
+    }
+
     public writeString(value: string) {
         const data = new TextEncoder().encode(value)
 

@@ -1,3 +1,4 @@
+import { Float } from './float'
 import { encode, decode } from './simple-codec'
 
 interface TestObject {
@@ -33,6 +34,10 @@ describe('SimpleBuffer', () => {
         expect(decode<number>(encode(2), 0)).toBe(2)
         expect(decode<number>(encode(-2147483648), 0)).toBe(-2147483648)
         expect(decode<number>(encode(2147483647), 0)).toBe(2147483647)
+    })
+
+    it('float32', () => {
+        expect(decode<Float>(encode(new Float(1.25)), Float.kZero)).toStrictEqual(new Float(1.25))
     })
 
     it('string', () => {
