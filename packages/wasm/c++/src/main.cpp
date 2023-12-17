@@ -15,6 +15,7 @@
 #include "action/update.h"
 #include "module.h"
 #include "runner/query.h"
+#include "runner/run.h"
 #include "utf_offset.h"
 
 static Modules modules;
@@ -85,6 +86,7 @@ ACTION(Completion, "completion")
     }
 
 RUNNER(Query, "query")
+RUNNER(Run, "run")
 
 #undef RUNNER
 }

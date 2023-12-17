@@ -5,8 +5,6 @@ cmake_path(SET SKIA_SOURCE_DIR NORMALIZE ${CMAKE_CURRENT_SOURCE_DIR}/../external
 cmake_path(SET SKIA_CMAKE_DIR NORMALIZE ${CMAKE_CURRENT_BINARY_DIR}/cmake)
 
 add_library(skia_sksl STATIC
-    ${SKIA_SOURCE_DIR}/src/core/SkRasterPipeline.cpp
-
     ${SKIA_SOURCE_DIR}/src/sksl/SkSLAnalysis.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/SkSLBuiltinTypes.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/SkSLCompiler.cpp
@@ -30,12 +28,12 @@ add_library(skia_sksl STATIC
     ${SKIA_SOURCE_DIR}/src/sksl/analysis/SkSLCanExitWithoutReturningValue.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/analysis/SkSLCheckProgramStructure.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/analysis/SkSLFinalizationChecks.cpp
-    # ${SKIA_SOURCE_DIR}/src/sksl/analysis/SkSLGetLoopControlFlowInfo.cpp
+    ${SKIA_SOURCE_DIR}/src/sksl/analysis/SkSLGetLoopControlFlowInfo.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/analysis/SkSLGetLoopUnrollInfo.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/analysis/SkSLGetReturnComplexity.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/analysis/SkSLHasSideEffects.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/analysis/SkSLIsConstantExpression.cpp
-    # ${SKIA_SOURCE_DIR}/src/sksl/analysis/SkSLIsDynamicallyUniformExpression.cpp
+    ${SKIA_SOURCE_DIR}/src/sksl/analysis/SkSLIsDynamicallyUniformExpression.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/analysis/SkSLIsSameExpressionTree.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/analysis/SkSLIsTrivialExpression.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/analysis/SkSLProgramUsage.cpp
@@ -89,8 +87,9 @@ add_library(skia_sksl STATIC
     ${SKIA_SOURCE_DIR}/src/sksl/ir/SkSLVarDeclarations.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/ir/SkSLVariable.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/ir/SkSLVariableReference.cpp
-    # ${SKIA_SOURCE_DIR}/src/sksl/tracing/SkSLDebugTracePriv.cpp
-    # ${SKIA_SOURCE_DIR}/src/sksl/tracing/SkSLTraceHook.cpp
+    ${SKIA_SOURCE_DIR}/src/sksl/tracing/SkSLDebugTracePlayer.cpp
+    ${SKIA_SOURCE_DIR}/src/sksl/tracing/SkSLDebugTracePriv.cpp
+    ${SKIA_SOURCE_DIR}/src/sksl/tracing/SkSLTraceHook.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/transform/SkSLAddConstToVarModifiers.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/transform/SkSLEliminateDeadFunctions.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/transform/SkSLEliminateDeadGlobalVariables.cpp
@@ -102,40 +101,64 @@ add_library(skia_sksl STATIC
     ${SKIA_SOURCE_DIR}/src/sksl/transform/SkSLHoistSwitchVarDeclarationsAtTopLevel.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/transform/SkSLRenamePrivateSymbols.cpp
     ${SKIA_SOURCE_DIR}/src/sksl/transform/SkSLReplaceConstVarsWithLiterals.cpp
-    # ${SKIA_SOURCE_DIR}/src/sksl/transform/SkSLRewriteIndexedSwizzle.cpp
+    ${SKIA_SOURCE_DIR}/src/sksl/transform/SkSLRewriteIndexedSwizzle.cpp
     ${SKIA_SOURCE_DIR}/src/base/SkArenaAlloc.cpp
     # ${SKIA_SOURCE_DIR}/src/base/SkBlockAllocator.cpp
+    ${SKIA_SOURCE_DIR}/src/base/SkBezierCurves.cpp
+    ${SKIA_SOURCE_DIR}/src/base/SkBuffer.cpp
     ${SKIA_SOURCE_DIR}/src/base/SkContainers.cpp
+    ${SKIA_SOURCE_DIR}/src/base/SkCubics.cpp
+    ${SKIA_SOURCE_DIR}/src/base/SkFloatingPoint.cpp
     ${SKIA_SOURCE_DIR}/src/base/SkHalf.cpp
-    # ${SKIA_SOURCE_DIR}/src/base/SkMalloc.cpp
+    ${SKIA_SOURCE_DIR}/src/base/SkMalloc.cpp
     # ${SKIA_SOURCE_DIR}/src/base/SkMathPriv.cpp
+    ${SKIA_SOURCE_DIR}/src/base/SkQuads.cpp
     ${SKIA_SOURCE_DIR}/src/base/SkSafeMath.cpp
     ${SKIA_SOURCE_DIR}/src/base/SkSemaphore.cpp
+    ${SKIA_SOURCE_DIR}/src/base/SkTDArray.cpp
     ${SKIA_SOURCE_DIR}/src/base/SkThreadID.cpp
     ${SKIA_SOURCE_DIR}/src/base/SkUTF.cpp
     ${SKIA_SOURCE_DIR}/src/base/SkUtils.cpp
     ${SKIA_SOURCE_DIR}/src/core/SkChecksum.cpp
-    # ${SKIA_SOURCE_DIR}/src/core/SkCpu.cpp
+    ${SKIA_SOURCE_DIR}/src/core/SkColor.cpp
+    ${SKIA_SOURCE_DIR}/src/core/SkCpu.cpp
+    ${SKIA_SOURCE_DIR}/src/core/SkCubicClipper.cpp
     ${SKIA_SOURCE_DIR}/src/core/SkData.cpp
+    ${SKIA_SOURCE_DIR}/src/core/SkEdgeClipper.cpp
+    ${SKIA_SOURCE_DIR}/src/core/SkGeometry.cpp
+    ${SKIA_SOURCE_DIR}/src/core/SkIDChangeListener.cpp
+    ${SKIA_SOURCE_DIR}/src/core/SkLineClipper.cpp
+    ${SKIA_SOURCE_DIR}/src/core/SkMatrix.cpp
     ${SKIA_SOURCE_DIR}/src/core/SkMatrixInvert.cpp
+    ${SKIA_SOURCE_DIR}/src/core/SkM44.cpp
+    ${SKIA_SOURCE_DIR}/src/core/SkOpts.cpp
+    ${SKIA_SOURCE_DIR}/src/core/SkPath.cpp
+    ${SKIA_SOURCE_DIR}/src/core/SkPathBuilder.cpp
+    ${SKIA_SOURCE_DIR}/src/core/SkPathRef.cpp
+    ${SKIA_SOURCE_DIR}/src/core/SkPoint.cpp
+    ${SKIA_SOURCE_DIR}/src/core/SkRasterPipeline.cpp
+    ${SKIA_SOURCE_DIR}/src/core/SkRect.cpp
+    ${SKIA_SOURCE_DIR}/src/core/SkRRect.cpp
     ${SKIA_SOURCE_DIR}/src/core/SkStream.cpp
     ${SKIA_SOURCE_DIR}/src/core/SkString.cpp
-    # ${SKIA_SOURCE_DIR}/src/core/SkStringUtils.cpp
+    ${SKIA_SOURCE_DIR}/src/core/SkStringUtils.cpp
     # ${SKIA_SOURCE_DIR}/src/gpu/ganesh/GrMemoryPool.cpp
+    ${SKIA_SOURCE_DIR}/src/opts/SkOpts_hsw.cpp
     ${SKIA_SOURCE_DIR}/src/ports/SkMemory_malloc.cpp
     ${SKIA_SOURCE_DIR}/src/ports/SkDebug_stdio.cpp
     ${SKIA_SOURCE_DIR}/src/ports/SkOSFile_stdio.cpp
     ${SKIA_SOURCE_DIR}/src/ports/SkOSFile_posix.cpp
-    # ${SKIA_SOURCE_DIR}/src/utils/SkJSON.cpp
-    # ${SKIA_SOURCE_DIR}/src/utils/SkJSONWriter.cpp
+    ${SKIA_SOURCE_DIR}/src/utils/SkJSON.cpp
+    ${SKIA_SOURCE_DIR}/src/utils/SkJSONWriter.cpp
     # ${SKIA_SOURCE_DIR}/src/utils/SkOSPath.cpp
-    # ${SKIA_SOURCE_DIR}/src/utils/SkParse.cpp
+    ${SKIA_SOURCE_DIR}/src/utils/SkParse.cpp
     # ${SKIA_SOURCE_DIR}/src/utils/SkShaderUtils.cpp
     ${SKIA_SOURCE_DIR}/src/utils/SkEventTracer.cpp
+    ${SKIA_SOURCE_DIR}/modules/skcms/skcms.cc
 )
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_compile_definitions(skia_sksl PUBLIC SK_BUILD_FOR_UNIX)
+    target_compile_definitions(skia_sksl PUBLIC SK_BUILD_FOR_UNIX SKSL_ENABLE_TRACING)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    target_compile_definitions(skia_sksl PUBLIC SK_BUILD_FOR_MAC)
+    target_compile_definitions(skia_sksl PUBLIC SK_BUILD_FOR_MAC SKSL_ENABLE_TRACING)
 endif()
 target_include_directories(skia_sksl PUBLIC ${SKIA_SOURCE_DIR})

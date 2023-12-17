@@ -16,6 +16,7 @@ add_library(sksl-wasm-lib STATIC
     action/definition.cpp
     action/completion.cpp
     runner/query.cpp
+    runner/run.cpp
 )
 target_include_directories(sksl-wasm-lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(sksl-wasm-lib PUBLIC skia_sksl)
@@ -36,6 +37,7 @@ set(EXPORTED_FUNCTIONS
     _Definition
     _Completion
     _Query
+    _Run
 )
 list(JOIN EXPORTED_FUNCTIONS "," EXPORTED_FUNCTIONS_JOINED)
 
@@ -57,6 +59,7 @@ add_executable(sksl-wasm-lib-test
     formatter_test.cpp
     simple_codec_test.cpp
     utf_offset_test.cpp
+    runner/run_test.cpp
 )
 target_link_libraries(sksl-wasm-lib-test PRIVATE sksl-wasm-lib gmock_main)
 enable_testing()

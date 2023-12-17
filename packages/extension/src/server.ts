@@ -1,7 +1,7 @@
 import * as ls from 'vscode-languageserver/node'
 import * as lstd from 'vscode-languageserver-textdocument'
 import { SkSLServer } from '@workspace/lsp'
-import { QueryParams, kQueryUrl } from '@workspace/runner-data'
+import { QueryParams, RunParams, kQueryUrl, kRunUrl } from '@workspace/runner-data'
 
 const connection = ls.createConnection(ls.ProposedFeatures.all)
 const documents = new ls.TextDocuments(lstd.TextDocument)
@@ -93,6 +93,10 @@ connection.onCompletion((params) => {
 
 connection.onRequest(kQueryUrl, (params: QueryParams) => {
     return server?.query(params)
+})
+
+connection.onRequest(kRunUrl, (params: RunParams) => {
+    return server?.run(params)
 })
 
 documents.listen(connection)

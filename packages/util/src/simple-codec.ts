@@ -1,5 +1,5 @@
 import { DynamicBuffer } from './dynamic-buffer'
-import { Float } from './float'
+import { Float } from '@workspace/float'
 
 export function encode(value: unknown): Uint8Array {
     const buffer = new DynamicBuffer()

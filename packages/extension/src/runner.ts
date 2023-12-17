@@ -12,6 +12,10 @@ import {
     GetUniformsResponse,
     RunSkSLRequest,
     DebugSkSLRequest,
+    kRunUrl,
+    RunResult,
+    RunParams,
+    QueryParams,
 } from '@workspace/runner-data'
 
 export class Runner {
@@ -71,14 +75,17 @@ export class Runner {
         panel.webview.postMessage(
             pipe<SelectSkSLResponse>({
                 type: MessageType.kSelectSkSL,
-                path: uri.toString(),
+                path: uri.fsPath,
             }),
         )
 
         const buffer = fs.readFileSync(uri.fsPath)
-        const result: QueryResult = await this.client.sendRequest(kQueryUrl, {
-            source: buffer.toString(),
-        })
+        const result: QueryResult = await this.client.sendRequest(
+            kQueryUrl,
+            pipe<QueryParams>({
+                source: buffer.toString(),
+            }),
+        )
         panel.webview.postMessage(
             pipe<GetUniformsResponse>({
                 type: MessageType.kGetUniforms,
@@ -88,8 +95,16 @@ export class Runner {
     }
 
     private async onRunSkSLRequest(panel: vscode.WebviewPanel, request: RunSkSLRequest) {
-        console.log(panel)
-        console.log(request)
+        const buffer = fs.readFileSync(request.path)
+        const result: RunResult = await this.client.sendRequest(
+            kRunUrl,
+            pipe<RunParams>({
+                source: buffer.toString(),
+                values: request.values,
+            }),
+        )
+        // TODO:
+        console.log(result.color)
     }
 
     private async onDebugSkSLRequest(panel: vscode.WebviewPanel, request: DebugSkSLRequest) {

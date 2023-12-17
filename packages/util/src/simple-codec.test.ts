@@ -1,4 +1,4 @@
-import { Float } from './float'
+import { Float } from '@workspace/float'
 import { encode, decode } from './simple-codec'
 
 interface TestObject {

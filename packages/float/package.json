@@ -1,0 +1,7 @@
+{
+    "name": "@workspace/float",
+    "version": "1.0.0",
+    "author": "seven332",
+    "license": "MIT",
+    "main": "src/float.ts"
+}

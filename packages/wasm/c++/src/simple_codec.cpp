@@ -18,6 +18,14 @@ void Write(std::vector<std::byte>* bytes, int value) {
     bytes->push_back(*(ptr + 3));
 }
 
+void Write(std::vector<std::byte>* bytes, float value) {
+    const auto* ptr = reinterpret_cast<const std::byte*>(&value);
+    bytes->push_back(*ptr);
+    bytes->push_back(*(ptr + 1));
+    bytes->push_back(*(ptr + 2));
+    bytes->push_back(*(ptr + 3));
+}
+
 void Write(std::vector<std::byte>* bytes, const std::string& value) {
     Write(bytes, static_cast<int>(value.size()));
     for (auto c : value) {
@@ -41,6 +49,12 @@ std::size_t Read(std::span<const std::byte> bytes, std::size_t offset, bool* val
 }
 
 std::size_t Read(std::span<const std::byte> bytes, std::size_t offset, int* value) {
+    CheckSize(bytes, offset + 4);
+    std::memcpy(value, bytes.data() + offset, 4);
+    return 4;
+}
+
+std::size_t Read(std::span<const std::byte> bytes, std::size_t offset, float* value) {
     CheckSize(bytes, offset + 4);
     std::memcpy(value, bytes.data() + offset, 4);
     return 4;

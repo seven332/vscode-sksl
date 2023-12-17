@@ -3,5 +3,8 @@
     "version": "1.0.0",
     "author": "seven332",
     "license": "MIT",
-    "main": "src/index.ts"
+    "main": "src/index.ts",
+    "dependencies": {
+        "@workspace/float": "workspace:*"
+    }
 }

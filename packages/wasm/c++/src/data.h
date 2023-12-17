@@ -140,3 +140,17 @@ struct SkSLUniform {
         Write(bytes, value.name);
     }
 };
+
+struct SkSLColor {
+    float r;
+    float g;
+    float b;
+    float a;
+
+    friend void Write(std::vector<std::byte>* bytes, const SkSLColor& value) {
+        Write(bytes, value.r);
+        Write(bytes, value.g);
+        Write(bytes, value.b);
+        Write(bytes, value.a);
+    }
+};

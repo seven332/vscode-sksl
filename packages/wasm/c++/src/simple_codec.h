@@ -9,6 +9,7 @@
 
 void Write(std::vector<std::byte>* bytes, bool value);
 void Write(std::vector<std::byte>* bytes, int value);
+void Write(std::vector<std::byte>* bytes, float value);
 void Write(std::vector<std::byte>* bytes, const std::string& value);
 
 template<class T>
@@ -23,6 +24,7 @@ void Write(std::vector<std::byte>* bytes, const std::vector<T>& value) {
 
 std::size_t Read(std::span<const std::byte> bytes, std::size_t offset, bool* value);
 std::size_t Read(std::span<const std::byte> bytes, std::size_t offset, int* value);
+std::size_t Read(std::span<const std::byte> bytes, std::size_t offset, float* value);
 std::size_t Read(std::span<const std::byte> bytes, std::size_t offset, std::string* value);
 
 template<class T>
